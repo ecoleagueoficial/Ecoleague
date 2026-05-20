@@ -30,6 +30,9 @@ const ACHIEVEMENTS = [
 
 const statusColors = { "Autóctona": "#4CAF50", "Invasora": "#F44336", "Cultivada": "#FF9800" };
 
+const INAT_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VyX2lkIjoxMDU2NTcyMywiZXhwIjoxNzc5MzU3NjM2fQ.HbuDgJna6R4PFftLGi3yW3xTPLEy3NigH6RgY3xb1GHhxSWi5lTCyT_lGF_o_HCxt7_DtVWifc2atlA96Hey8Q";
+
+
 export default function EcoQuest() {
   const [tab, setTab] = useState("scan");
   const [myPoints, setMyPoints] = useState(0);
@@ -82,30 +85,46 @@ export default function EcoQuest() {
     const file = e.target.files[0];
     if (!file) return;
     setScanning(true); setResult(null);
-    const base64 = await new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result.split(",")[1]); r.readAsDataURL(file); });
     try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
+      const formData = new FormData();
+      formData.append("image", file);
+      const uploadRes = await fetch("https://api.inaturalist.org/v1/computervision/score_image", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1200,
-          messages: [{ role: "user", content: [
-            { type: "image", source: { type: "base64", media_type: file.type || "image/jpeg", data: base64 } },
-            { type: "text", text: `Eres experto en botánica. Analiza la imagen y responde SOLO JSON válido sin markdown.\nSi hay planta, árbol, flor u hongo:\n{"type":"plant","name":"nombre común español","scientific":"nombre científico","origin":"región origen","status":"Autóctona|Invasora|Cultivada","emoji":"emoji","points":10-60,"desc":"descripción 1-2 frases","confidence":"Alta|Media|Baja","uses":"usos 1-2 frases","flowering":"época floración","characteristics":"3 rasgos separados por punto y coma","curiosity":"dato curioso"}\nSi no hay planta: {"type":"none","message":"No se detecta ninguna planta en la imagen"}` }
-          ]}]
-        })
+        headers: { "Authorization": INAT_TOKEN },
+        body: formData
       });
-      const data = await response.json();
-      const text = data.content?.map(c => c.text||"").join("") || "";
-      const parsed = JSON.parse(text.replace(/```json|```/g,"").trim());
-      setResult(parsed);
-      if (parsed.type === "plant") {
+      const uploadData = await uploadRes.json();
+      const top = uploadData.results?.[0];
+      if (top && top.taxon) {
+        const taxon = top.taxon;
+        const name = taxon.preferred_common_name || taxon.name;
+        const scientific = taxon.name;
+        const score = Math.round((top.combined_score || 0) * 100);
+        const isPlant = taxon.iconic_taxon_name === "Plantae" || taxon.ancestor_ids?.includes(47126);
+        const pts = Math.min(60, Math.max(10, Math.round(score * 0.6)));
+        const parsed = {
+          type: "plant",
+          name: name || scientific,
+          scientific,
+          origin: taxon.establishment_means?.establishment_means === "introduced" ? "Introducida" : "Nativa",
+          status: taxon.establishment_means?.establishment_means === "introduced" ? "Invasora" : "Autóctona",
+          emoji: isPlant ? "🌿" : "🍄",
+          points: pts,
+          desc: taxon.wikipedia_summary || `Especie identificada con un ${score}% de confianza.`,
+          confidence: score > 70 ? "Alta" : score > 40 ? "Media" : "Baja",
+          uses: "Consulta más información en iNaturalist o Wikipedia.",
+          flowering: "Variable según la especie y región.",
+          characteristics: `Especie: ${scientific}; Confianza: ${score}%; Familia: ${taxon.family_name || "desconocida"}`,
+          curiosity: `Esta especie ha sido observada ${taxon.observations_count?.toLocaleString() || "miles de"} veces en todo el mundo.`
+        };
+        setResult(parsed);
         setPlantCount(prev => ({ ...prev, [parsed.name]: (prev[parsed.name]||0)+1 }));
         if (parsed.status === "Invasora") setInvasoraCount(c => c+1);
         addPoints(parsed.points, parsed.name, parsed.emoji);
+      } else {
+        setResult({ type: "none", message: "No se detectó ninguna planta. Intenta con otra foto." });
       }
-    } catch { setResult({ type: "error", message: "No se pudo analizar la imagen. Inténtalo de nuevo." }); }
+    } catch { setResult({ type: "error", message: "Error al analizar la imagen. Inténtalo de nuevo." }); }
     setScanning(false);
     if (fileRef.current) fileRef.current.value = "";
   };
@@ -188,13 +207,14 @@ export default function EcoQuest() {
               {scanning ? (
                 <div>
                   <div style={{ fontSize:50, animation:"spin 1s linear infinite", display:"inline-block" }}>🔍</div>
-                  <div style={{ marginTop:16, color:"#4ade80", fontSize:15 }}>Analizando con IA...</div>
+                  <div style={{ marginTop:16, color:"#4ade80", fontSize:15 }}>Identificando con iNaturalist...</div>
+                  <div style={{ marginTop:6, color:"#86efac66", fontSize:12 }}>Base de datos de millones de especies</div>
                 </div>
               ) : (
                 <>
                   <div style={{ fontSize:56 }}>📸</div>
                   <div style={{ fontSize:17, fontWeight:"700", color:"#4ade80", marginTop:12 }}>Fotografía una planta</div>
-                  <div style={{ fontSize:13, color:"#86efac88", marginTop:6 }}>La IA la identificará al instante</div>
+                  <div style={{ fontSize:13, color:"#86efac88", marginTop:6 }}>Identificación gratuita con iNaturalist</div>
                   <div style={{ marginTop:16, display:"inline-block", background:"linear-gradient(135deg,#16a34a,#0d9488)", color:"white", borderRadius:50, padding:"10px 28px", fontSize:14, fontWeight:"700" }}>Abrir cámara</div>
                 </>
               )}
