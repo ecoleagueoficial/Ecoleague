@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 
 const FRIENDS_BASE = [
-  { name: "Alba", avatar: "🌸", points: 340 },
-  { name: "Marcos", avatar: "🌳", points: 280 },
+  { name: "Teresa", avatar: "🌸", points: 340 },
+  { name: "Javier", avatar: "🌳", points: 280 },
   { name: "Lucía", avatar: "🍃", points: 210 },
   { name: "Dani", avatar: "🌻", points: 150 },
 ];
