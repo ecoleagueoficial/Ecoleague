@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
-const FRIENDS = [
-  { name: "Tú", avatar: "🌿", points: 0, isYou: true },
+const FRIENDS_BASE = [
   { name: "Alba", avatar: "🌸", points: 340 },
   { name: "Marcos", avatar: "🌳", points: 280 },
   { name: "Lucía", avatar: "🍃", points: 210 },
@@ -29,24 +28,41 @@ const ACHIEVEMENTS = [
 ];
 
 const statusColors = { "Autóctona": "#4CAF50", "Invasora": "#F44336", "Cultivada": "#FF9800" };
-
 const INAT_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VyX2lkIjoxMDU2NTcyMywiZXhwIjoxNzc5MzU3NjM2fQ.HbuDgJna6R4PFftLGi3yW3xTPLEy3NigH6RgY3xb1GHhxSWi5lTCyT_lGF_o_HCxt7_DtVWifc2atlA96Hey8Q";
 
+function loadState(key, def) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; } catch { return def; }
+}
+function saveState(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+}
 
 export default function EcoQuest() {
   const [tab, setTab] = useState("scan");
-  const [myPoints, setMyPoints] = useState(0);
-  const [leaderboard, setLeaderboard] = useState(FRIENDS);
-  const [log, setLog] = useState([]);
+  const [myPoints, setMyPoints] = useState(() => loadState("eq_points", 0));
+  const [log, setLog] = useState(() => loadState("eq_log", []));
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState(null);
   const [recycleAnim, setRecycleAnim] = useState(null);
-  const [plantCount, setPlantCount] = useState({});
-  const [recycleCount, setRecycleCount] = useState({});
-  const [invasoraCount, setInvasoraCount] = useState(0);
+  const [plantCount, setPlantCount] = useState(() => loadState("eq_plants", {}));
+  const [recycleCount, setRecycleCount] = useState(() => loadState("eq_recycle", {}));
+  const [invasoraCount, setInvasoraCount] = useState(() => loadState("eq_invasora", 0));
   const [notification, setNotification] = useState(null);
-  const [unlockedAchievements, setUnlockedAchievements] = useState([]);
+  const [unlockedAchievements, setUnlockedAchievements] = useState(() => loadState("eq_achievements", []));
+  const [userName, setUserName] = useState(() => loadState("eq_username", ""));
+  const [showNameInput, setShowNameInput] = useState(false);
+  const [tempName, setTempName] = useState("");
   const fileRef = useRef();
+
+  const leaderboard = [...FRIENDS_BASE, { name: userName || "Tú", avatar: "🌿", points: myPoints, isYou: true }]
+    .sort((a,b) => b.points - a.points);
+
+  useEffect(() => { saveState("eq_points", myPoints); }, [myPoints]);
+  useEffect(() => { saveState("eq_log", log); }, [log]);
+  useEffect(() => { saveState("eq_plants", plantCount); }, [plantCount]);
+  useEffect(() => { saveState("eq_recycle", recycleCount); }, [recycleCount]);
+  useEffect(() => { saveState("eq_invasora", invasoraCount); }, [invasoraCount]);
+  useEffect(() => { saveState("eq_achievements", unlockedAchievements); }, [unlockedAchievements]);
 
   useEffect(() => {
     ACHIEVEMENTS.forEach(ach => {
@@ -55,7 +71,6 @@ export default function EcoQuest() {
           if (prev.includes(ach.id)) return prev;
           setMyPoints(pts => {
             const newPts = pts + ach.bonus;
-            setLeaderboard(lb => lb.map(f => f.isYou ? { ...f, points: newPts } : f).sort((a,b)=>b.points-a.points));
             return newPts;
           });
           setLog(prev => [{ label: `🏆 Logro: ${ach.title}`, emoji: ach.emoji, pts: ach.bonus, time: new Date().toLocaleTimeString() }, ...prev.slice(0,19)]);
@@ -67,11 +82,7 @@ export default function EcoQuest() {
   }, [plantCount, recycleCount, invasoraCount]);
 
   const addPoints = (pts, label, emoji) => {
-    setMyPoints(prev => {
-      const n = prev + pts;
-      setLeaderboard(lb => lb.map(f => f.isYou ? { ...f, points: n } : f).sort((a,b)=>b.points-a.points));
-      return n;
-    });
+    setMyPoints(prev => prev + pts);
     setLog(prev => [{ label, emoji, pts, time: new Date().toLocaleTimeString() }, ...prev.slice(0,19)]);
     showNotification(`+${pts} pts — ${label}`, emoji);
   };
@@ -88,28 +99,24 @@ export default function EcoQuest() {
     try {
       const formData = new FormData();
       formData.append("image", file);
-      const uploadRes = await fetch("https://api.inaturalist.org/v1/computervision/score_image", {
+      const res = await fetch("https://api.inaturalist.org/v1/computervision/score_image", {
         method: "POST",
         headers: { "Authorization": INAT_TOKEN },
         body: formData
       });
-      const uploadData = await uploadRes.json();
-      const top = uploadData.results?.[0];
+      const data = await res.json();
+      const top = data.results?.[0];
       if (top && top.taxon) {
         const taxon = top.taxon;
         const name = taxon.preferred_common_name || taxon.name;
         const scientific = taxon.name;
         const score = Math.round((top.combined_score || 0) * 100);
-        const isPlant = taxon.iconic_taxon_name === "Plantae" || taxon.ancestor_ids?.includes(47126);
         const pts = Math.min(60, Math.max(10, Math.round(score * 0.6)));
         const parsed = {
-          type: "plant",
-          name: name || scientific,
-          scientific,
+          type: "plant", name: name || scientific, scientific,
           origin: taxon.establishment_means?.establishment_means === "introduced" ? "Introducida" : "Nativa",
           status: taxon.establishment_means?.establishment_means === "introduced" ? "Invasora" : "Autóctona",
-          emoji: isPlant ? "🌿" : "🍄",
-          points: pts,
+          emoji: "🌿", points: pts,
           desc: taxon.wikipedia_summary || `Especie identificada con un ${score}% de confianza.`,
           confidence: score > 70 ? "Alta" : score > 40 ? "Media" : "Baja",
           uses: "Consulta más información en iNaturalist o Wikipedia.",
@@ -153,8 +160,7 @@ export default function EcoQuest() {
         @keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.4)}100%{transform:scale(1)}}
         @keyframes slideIn{from{transform:translateY(-60px) scale(0.8);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
         @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-        .tab-btn{transition:all 0.2s;cursor:pointer}.tab-btn:hover{transform:translateY(-2px)}
-        .rc{transition:all 0.2s;cursor:pointer}.rc:hover{transform:scale(1.05)}
+        .tab-btn{transition:all 0.2s;cursor:pointer}.rc{transition:all 0.2s;cursor:pointer}.rc:hover{transform:scale(1.05)}
       `}</style>
 
       {notification && (
@@ -168,6 +174,19 @@ export default function EcoQuest() {
           <div style={{ fontSize:13, letterSpacing:4, color:"#4ade80", textTransform:"uppercase", marginBottom:8 }}>Proyecto EcoQuest</div>
           <div style={{ fontSize:42, fontWeight:"900", letterSpacing:-1, lineHeight:1, background:"linear-gradient(135deg,#4ade80,#22d3ee)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>🌿 EcoQuest</div>
           <div style={{ fontSize:13, color:"#86efac88", marginTop:6 }}>Identifica, recicla, compite</div>
+          <div onClick={()=>setShowNameInput(!showNameInput)} style={{ marginTop:10, display:"inline-block", background:"rgba(74,222,128,0.1)", borderRadius:50, padding:"6px 16px", fontSize:12, color:"#4ade80", cursor:"pointer", border:"1px solid rgba(74,222,128,0.2)" }}>
+            👤 {userName || "Pon tu nombre"} ✏️
+          </div>
+          {showNameInput && (
+            <div style={{ marginTop:10, display:"flex", gap:8, justifyContent:"center" }}>
+              <input value={tempName} onChange={e=>setTempName(e.target.value)}
+                placeholder="Tu nombre..." style={{ background:"rgba(255,255,255,0.1)", border:"1px solid rgba(74,222,128,0.3)", borderRadius:50, padding:"8px 16px", color:"white", fontSize:13, outline:"none", width:150 }} />
+              <button onClick={()=>{ saveState("eq_username", tempName); setUserName(tempName); setShowNameInput(false); }}
+                style={{ background:"linear-gradient(135deg,#16a34a,#0d9488)", color:"white", border:"none", borderRadius:50, padding:"8px 16px", fontSize:13, cursor:"pointer" }}>
+                Guardar
+              </button>
+            </div>
+          )}
         </div>
 
         <div style={{ margin:"0 20px 20px", display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10 }}>
