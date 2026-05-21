@@ -745,3 +745,9 @@ export default function EcoQuest() {
     </div>
   );
 }
+ENDOFFILE
+{
+  "returncode" : 0,
+  "stdout" : "",
+  "stderr" : ""
+}
