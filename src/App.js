@@ -746,8 +746,3 @@ export default function EcoQuest() {
   );
 }
 ENDOFFILE
-{
-  "returncode" : 0,
-  "stdout" : "",
-  "stderr" : ""
-}
