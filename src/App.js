@@ -107,6 +107,7 @@ export default function EcoQuest() {
   const [tfModel, setTfModel] = useState(null);
   const [modelLoading, setModelLoading] = useState(false);
   const fileRef = useRef();
+const recycleFileRef = useRef();
   const imgRef = useRef();
 
   const totalRecycled = Object.values(recycleCount).reduce((a,b)=>a+b,0);
@@ -454,8 +455,8 @@ export default function EcoQuest() {
               </div>
             )}
 
-            <div style={{background:"rgba(255,255,255,0.04)",borderRadius:22,padding:24,border:"2px dashed rgba(34,211,238,0.3)",textAlign:"center",marginBottom:20,cursor:"pointer"}} onClick={()=>{ setScanMode("recycle"); setTimeout(()=>fileRef.current?.click(),50); }}>
-              <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={handlePhotoUpload}/>
+            <div style={{background:"rgba(255,255,255,0.04)",borderRadius:22,padding:24,border:"2px dashed rgba(34,211,238,0.3)",textAlign:"center",marginBottom:20,cursor:"pointer"}} onClick={()=>recycleFileRef.current?.click()}
+              <input ref={recycleFileRef} type="file" accept="image/*" style={{display:"none"}} onChange={(e)=>{ setScanMode("recycle"); handlePhotoUpload(e); }}/>
               {scanning&&scanMode==="recycle"?(
                 <div><div style={{fontSize:48,animation:"spin 1s linear infinite",display:"inline-block"}}>🔍</div><div style={{marginTop:14,color:"#22d3ee",fontSize:14}}>Analizando con IA...</div></div>
               ):(
