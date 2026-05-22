@@ -94,7 +94,7 @@ export default function EcoQuest() {
   const uniquePlants = Object.keys(plantCount).length;
   const level = getLevel(myPoints);
   const leaderboard = [
-    {name:"Alba",avatar:"🌸",points:340},
+    {name:"Teresa",avatar:"🌸",points:340},
     {name:"Marcos",avatar:"🌳",points:280},
     {name:"Lucía",avatar:"🍃",points:210},
     {name:"Dani",avatar:"🌻",points:150},
