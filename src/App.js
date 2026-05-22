@@ -1,4 +1,3 @@
-cat > /mnt/user-data/outputs/EcoQuest.jsx << 'ENDOFFILE'
 import { useState, useRef, useEffect } from "react";
 
 // ─── DATA ───────────────────────────────────────────────────────────────────
