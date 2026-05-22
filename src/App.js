@@ -195,7 +195,7 @@ const recycleFileRef = useRef();
     if(scanMode==="plant"){
       try{
         const formData=new FormData(); formData.append("image",file);
-        const res=await fetch("https://api.inaturalist.org/v1/computervision/score_image",{ method:"POST", headers:{"Authorization":INAT_TOKEN}, body:formData });
+        const res=await fetch("https://corsproxy.io/?https://api.inaturalist.org/v1/computervision/score_image",{ method:"POST", headers:{"Authorization":INAT_TOKEN}, body:formData });
         const data=await res.json();
         const top=data.results?.[0];
         if(top&&top.taxon){
