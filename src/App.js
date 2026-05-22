@@ -343,7 +343,7 @@ export default function EcoQuest() {
         {tab==="scan"&&(
           <div style={{padding:"0 16px"}}>
             <div style={{background:"rgba(255,255,255,0.04)",borderRadius:22,padding:24,border:"2px dashed rgba(74,222,128,0.3)",textAlign:"center",marginBottom:20,cursor:"pointer"}} onClick={()=>{ setScanMode("plant"); setTimeout(()=>fileRef.current?.click(),50); }}>
-              <input ref={fileRef} type="file" accept="image/*" capture="environment" style={{display:"none"}} onChange={handlePhotoUpload}/>
+              <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={handlePhotoUpload}/>
               {scanning&&scanMode==="plant"?(
                 <div><div style={{fontSize:48,animation:"spin 1s linear infinite",display:"inline-block"}}>🔍</div><div style={{marginTop:14,color:"#4ade80",fontSize:14}}>Identificando planta...</div></div>
               ):(
