@@ -455,7 +455,7 @@ export default function EcoQuest() {
             )}
 
             <div style={{background:"rgba(255,255,255,0.04)",borderRadius:22,padding:24,border:"2px dashed rgba(34,211,238,0.3)",textAlign:"center",marginBottom:20,cursor:"pointer"}} onClick={()=>{ setScanMode("recycle"); setTimeout(()=>fileRef.current?.click(),50); }}>
-              <input ref={fileRef} type="file" accept="image/*" capture="environment" style={{display:"none"}} onChange={handlePhotoUpload}/>
+              <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={handlePhotoUpload}/>
               {scanning&&scanMode==="recycle"?(
                 <div><div style={{fontSize:48,animation:"spin 1s linear infinite",display:"inline-block"}}>🔍</div><div style={{marginTop:14,color:"#22d3ee",fontSize:14}}>Analizando con IA...</div></div>
               ):(
