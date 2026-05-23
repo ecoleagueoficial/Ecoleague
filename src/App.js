@@ -1,30 +1,30 @@
-cat > /mnt/user-data/outputs/EcoQuest.jsx << 'ENDOFFILE'
+cat > /mnt/user-data/outputs/EcoQuest.jsx << 'EOF'
 import { useState, useEffect } from "react";
 
 const RECYCLE_MAP = {
-  "bottle":{ name:"Botella", bin:"Amarillo/Verde", emoji:"🍾", tip:"Enjuágala antes. Separa el tapón.", material:"Vidrio o plástico", decompose:"450-4000 años", co2:"0.2kg CO₂ ahorrado", points:15 },
-  "wine glass":{ name:"Copa de vidrio", bin:"Verde", emoji:"🍷", tip:"Sin residuos de comida.", material:"Vidrio", decompose:"4000 años", co2:"0.3kg CO₂ ahorrado", points:15 },
-  "cup":{ name:"Taza/Vaso", bin:"Azul o Amarillo", emoji:"☕", tip:"Limpia antes de reciclar.", material:"Cerámica o plástico", decompose:"Variable", co2:"0.1kg CO₂ ahorrado", points:10 },
-  "can":{ name:"Lata", bin:"Amarillo", emoji:"🥫", tip:"Aplástala. Separa tapas de aluminio.", material:"Aluminio/Acero", decompose:"200 años", co2:"0.5kg CO₂ ahorrado", points:12 },
-  "book":{ name:"Libro/Papel", bin:"Azul", emoji:"📚", tip:"Sin partes plásticas.", material:"Papel", decompose:"2-6 semanas", co2:"0.2kg CO₂ ahorrado", points:8 },
-  "cell phone":{ name:"Teléfono móvil", bin:"Punto limpio", emoji:"📱", tip:"Borra datos. Lleva a tienda o punto limpio.", material:"Metales raros", decompose:"Indefinido", co2:"Recupera metales valiosos", points:20 },
-  "laptop":{ name:"Portátil", bin:"Punto limpio", emoji:"💻", tip:"Borra datos. Centro de reciclaje electrónico.", material:"Metales y plásticos", decompose:"Indefinido", co2:"Recupera materiales valiosos", points:20 },
-  "banana":{ name:"Fruta/Orgánico", bin:"Marrón", emoji:"🍌", tip:"Al contenedor marrón orgánico.", material:"Orgánico", decompose:"2-5 semanas", co2:"0.1kg CO₂ ahorrado", points:5 },
-  "apple":{ name:"Fruta/Orgánico", bin:"Marrón", emoji:"🍎", tip:"Al contenedor marrón orgánico.", material:"Orgánico", decompose:"2-5 semanas", co2:"0.1kg CO₂ ahorrado", points:5 },
-  "chair":{ name:"Silla/Mueble", bin:"Punto limpio", emoji:"🪑", tip:"Punto limpio o donación si está en buen estado.", material:"Madera/Plástico", decompose:"Variable", co2:"Dona si es posible", points:15 },
-  "default":{ name:"Objeto reciclable", bin:"Consultar", emoji:"♻️", tip:"Consulta el punto limpio más cercano.", material:"Mixto", decompose:"Variable", co2:"Depende del material", points:10 }
+  "bottle":{ name:"Botella", bin:"Amarillo/Verde", emoji:"🍾", tip:"Enjuagala antes. Separa el tapon.", material:"Vidrio o plastico", decompose:"450-4000 anos", co2:"0.2kg CO2 ahorrado", points:15 },
+  "wine glass":{ name:"Copa de vidrio", bin:"Verde", emoji:"🍷", tip:"Sin residuos de comida.", material:"Vidrio", decompose:"4000 anos", co2:"0.3kg CO2 ahorrado", points:15 },
+  "cup":{ name:"Taza/Vaso", bin:"Azul o Amarillo", emoji:"☕", tip:"Limpia antes de reciclar.", material:"Ceramica o plastico", decompose:"Variable", co2:"0.1kg CO2 ahorrado", points:10 },
+  "can":{ name:"Lata", bin:"Amarillo", emoji:"🥫", tip:"Aplastala. Separa tapas de aluminio.", material:"Aluminio/Acero", decompose:"200 anos", co2:"0.5kg CO2 ahorrado", points:12 },
+  "book":{ name:"Libro/Papel", bin:"Azul", emoji:"📚", tip:"Sin partes plasticas.", material:"Papel", decompose:"2-6 semanas", co2:"0.2kg CO2 ahorrado", points:8 },
+  "cell phone":{ name:"Telefono movil", bin:"Punto limpio", emoji:"📱", tip:"Borra datos. Lleva a tienda o punto limpio.", material:"Metales raros", decompose:"Indefinido", co2:"Recupera metales valiosos", points:20 },
+  "laptop":{ name:"Portatil", bin:"Punto limpio", emoji:"💻", tip:"Borra datos. Centro de reciclaje electronico.", material:"Metales y plasticos", decompose:"Indefinido", co2:"Recupera materiales valiosos", points:20 },
+  "banana":{ name:"Fruta/Organico", bin:"Marron", emoji:"🍌", tip:"Al contenedor marron organico.", material:"Organico", decompose:"2-5 semanas", co2:"0.1kg CO2 ahorrado", points:5 },
+  "apple":{ name:"Fruta/Organico", bin:"Marron", emoji:"🍎", tip:"Al contenedor marron organico.", material:"Organico", decompose:"2-5 semanas", co2:"0.1kg CO2 ahorrado", points:5 },
+  "chair":{ name:"Silla/Mueble", bin:"Punto limpio", emoji:"🪑", tip:"Punto limpio o donacion si esta en buen estado.", material:"Madera/Plastico", decompose:"Variable", co2:"Dona si es posible", points:15 },
+  "default":{ name:"Objeto reciclable", bin:"Consultar", emoji:"♻️", tip:"Consulta el punto limpio mas cercano.", material:"Mixto", decompose:"Variable", co2:"Depende del material", points:10 }
 };
 
 const PLANT_CARE_DB = {
-  "lavender":{ water:"Bajo", freq:"1x/semana", light:"Sol pleno", temp:"15-30°C", humidity:"Baja", soil:"Arenoso", fertilizer:"1x/mes primavera", tips:"No encharcar. Podar tras floración.", toxic:"No tóxica", lifespan:"Perenne" },
-  "lavanda":{ water:"Bajo", freq:"1x/semana", light:"Sol pleno", temp:"15-30°C", humidity:"Baja", soil:"Arenoso", fertilizer:"1x/mes primavera", tips:"No encharcar. Podar tras floración.", toxic:"No tóxica", lifespan:"Perenne" },
-  "rosa":{ water:"Medio", freq:"2-3x/semana", light:"Sol pleno", temp:"15-25°C", humidity:"Media", soil:"Rico, bien drenado", fertilizer:"Cada 2 semanas verano", tips:"Regar mañana. Podar en invierno.", toxic:"No tóxica", lifespan:"Perenne" },
-  "rose":{ water:"Medio", freq:"2-3x/semana", light:"Sol pleno", temp:"15-25°C", humidity:"Media", soil:"Rico, bien drenado", fertilizer:"Cada 2 semanas verano", tips:"Regar mañana. Podar en invierno.", toxic:"No tóxica", lifespan:"Perenne" },
-  "girasol":{ water:"Medio-alto", freq:"2x/semana", light:"Sol pleno", temp:"20-30°C", humidity:"Media", soil:"Fértil, profundo", fertilizer:"1x/mes", tips:"Orientar al sur.", toxic:"No tóxica", lifespan:"Anual" },
-  "cactus":{ water:"Muy bajo", freq:"1x/2-3 semanas", light:"Sol directo", temp:"18-35°C", humidity:"Muy baja", soil:"Arenoso", fertilizer:"1x/mes verano", tips:"Nunca encharcar.", toxic:"No tóxica", lifespan:"Perenne" },
-  "aloe":{ water:"Bajo", freq:"1x/2 semanas", light:"Sol indirecto", temp:"15-30°C", humidity:"Baja", soil:"Arenoso", fertilizer:"2x/año", tips:"Dejar secar entre riegos.", toxic:"Tóxica si se ingiere", lifespan:"Perenne" },
-  "monstera":{ water:"Medio", freq:"1x/semana", light:"Luz indirecta", temp:"18-27°C", humidity:"Alta", soil:"Húmedo", fertilizer:"1x/mes primavera-verano", tips:"Limpiar hojas.", toxic:"Tóxica para mascotas", lifespan:"Perenne" },
-  "default":{ water:"Medio", freq:"2x/semana", light:"Luz indirecta", temp:"15-25°C", humidity:"Media", soil:"Universal", fertilizer:"1x/mes primavera-verano", tips:"Observar hojas para detectar problemas.", toxic:"Consultar fuente especializada", lifespan:"Variable" }
+  "lavender":{ water:"Bajo", freq:"1x/semana", light:"Sol pleno", temp:"15-30C", humidity:"Baja", soil:"Arenoso", fertilizer:"1x/mes primavera", tips:"No encharcar. Podar tras floracion.", toxic:"No toxica", lifespan:"Perenne" },
+  "lavanda":{ water:"Bajo", freq:"1x/semana", light:"Sol pleno", temp:"15-30C", humidity:"Baja", soil:"Arenoso", fertilizer:"1x/mes primavera", tips:"No encharcar. Podar tras floracion.", toxic:"No toxica", lifespan:"Perenne" },
+  "rosa":{ water:"Medio", freq:"2-3x/semana", light:"Sol pleno", temp:"15-25C", humidity:"Media", soil:"Rico, bien drenado", fertilizer:"Cada 2 semanas verano", tips:"Regar manana. Podar en invierno.", toxic:"No toxica", lifespan:"Perenne" },
+  "rose":{ water:"Medio", freq:"2-3x/semana", light:"Sol pleno", temp:"15-25C", humidity:"Media", soil:"Rico, bien drenado", fertilizer:"Cada 2 semanas verano", tips:"Regar manana. Podar en invierno.", toxic:"No toxica", lifespan:"Perenne" },
+  "girasol":{ water:"Medio-alto", freq:"2x/semana", light:"Sol pleno", temp:"20-30C", humidity:"Media", soil:"Fertil, profundo", fertilizer:"1x/mes", tips:"Orientar al sur.", toxic:"No toxica", lifespan:"Anual" },
+  "cactus":{ water:"Muy bajo", freq:"1x/2-3 semanas", light:"Sol directo", temp:"18-35C", humidity:"Muy baja", soil:"Arenoso", fertilizer:"1x/mes verano", tips:"Nunca encharcar.", toxic:"No toxica", lifespan:"Perenne" },
+  "aloe":{ water:"Bajo", freq:"1x/2 semanas", light:"Sol indirecto", temp:"15-30C", humidity:"Baja", soil:"Arenoso", fertilizer:"2x/ano", tips:"Dejar secar entre riegos.", toxic:"Toxica si se ingiere", lifespan:"Perenne" },
+  "monstera":{ water:"Medio", freq:"1x/semana", light:"Luz indirecta", temp:"18-27C", humidity:"Alta", soil:"Humedo", fertilizer:"1x/mes primavera-verano", tips:"Limpiar hojas.", toxic:"Toxica para mascotas", lifespan:"Perenne" },
+  "default":{ water:"Medio", freq:"2x/semana", light:"Luz indirecta", temp:"15-25C", humidity:"Media", soil:"Universal", fertilizer:"1x/mes primavera-verano", tips:"Observar hojas para detectar problemas.", toxic:"Consultar fuente especializada", lifespan:"Variable" }
 };
 
 const WEEKLY_CHALLENGES = [
@@ -32,7 +32,7 @@ const WEEKLY_CHALLENGES = [
   { id:"w2", title:"Maestro del reciclaje", desc:"Recicla 10 objetos", emoji:"♻️", goal:10, type:"recycle", bonus:100 },
   { id:"w3", title:"Detective invasor", desc:"Encuentra 1 planta invasora", emoji:"🚨", goal:1, type:"invasora", bonus:120 },
   { id:"w4", title:"Explorador urbano", desc:"Identifica 5 especies distintas", emoji:"🔭", goal:5, type:"unique", bonus:150 },
-  { id:"w5", title:"Héroe del reciclaje", desc:"Recicla 5 objetos con foto", emoji:"🧴", goal:5, type:"scanrecycle", bonus:90 },
+  { id:"w5", title:"Heroe del reciclaje", desc:"Recicla 5 objetos con foto", emoji:"🧴", goal:5, type:"scanrecycle", bonus:90 },
   { id:"w6", title:"Coleccionista", desc:"Identifica 8 plantas en total", emoji:"📚", goal:8, type:"totalplant", bonus:110 },
 ];
 
@@ -40,24 +40,34 @@ const AVATARS = ["🌿","🌱","🌳","🌸","🌻","🍃","🦋","🐝","🌍",
 const ACHIEVEMENTS = [
   { id:"first_plant", title:"Primer brote", desc:"Identifica tu primera planta", emoji:"🌱", bonus:20, check:(p)=>Object.keys(p).length>=1 },
   { id:"plants_5", title:"Explorador", desc:"Identifica 5 especies distintas", emoji:"🔭", bonus:50, check:(p)=>Object.keys(p).length>=5 },
-  { id:"plants_10", title:"Botánico", desc:"Identifica 10 especies distintas", emoji:"🌿", bonus:150, check:(p)=>Object.keys(p).length>=10 },
+  { id:"plants_10", title:"Botanico", desc:"Identifica 10 especies distintas", emoji:"🌿", bonus:150, check:(p)=>Object.keys(p).length>=10 },
   { id:"recycle_5", title:"Eco-consciente", desc:"Recicla 5 objetos", emoji:"♻️", bonus:30, check:(p,r)=>Object.values(r).reduce((a,b)=>a+b,0)>=5 },
-  { id:"recycle_20", title:"Eco-héroe", desc:"Recicla 20 objetos", emoji:"🦸", bonus:100, check:(p,r)=>Object.values(r).reduce((a,b)=>a+b,0)>=20 },
+  { id:"recycle_20", title:"Eco-heroe", desc:"Recicla 20 objetos", emoji:"🦸", bonus:100, check:(p,r)=>Object.values(r).reduce((a,b)=>a+b,0)>=20 },
   { id:"invasora", title:"Detective invasor", desc:"Encuentra una planta invasora", emoji:"🚨", bonus:60, check:(p,r,inv)=>inv>0 },
 ];
 
-const statusColors = { "Autóctona":"#4CAF50", "Invasora":"#F44336", "Cultivada":"#FF9800" };
-const binColors = { "Amarillo":"#FFD700","Azul":"#3B82F6","Verde":"#10B981","Verde/Azul":"#10B981","Amarillo/Verde":"#84CC16","Marrón":"#8B6914","Punto limpio":"#EF4444","Punto limpio/Ropa":"#8B5CF6","Consultar":"#6B7280","Azul o Amarillo":"#3B82F6" };
-const INAT_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VyX2lkIjoxMDU2NTcyMywiZXhwIjoxNzc5MzU3NjM2fQ.HbuDgJna6R4PFftLGi3yW3xTPLEy3NigH6RgY3xb1GHhxSWi5lTCyT_lGF_o_HCxt7_DtVWifc2atlA96Hey8Q";
+const statusColors = { "Autoctona":"#4CAF50", "Invasora":"#F44336", "Cultivada":"#FF9800" };
+const binColors = { "Amarillo":"#FFD700","Azul":"#3B82F6","Verde":"#10B981","Verde/Azul":"#10B981","Amarillo/Verde":"#84CC16","Marron":"#8B6914","Punto limpio":"#EF4444","Consultar":"#6B7280","Azul o Amarillo":"#3B82F6" };
 
 function ls(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch{ return d; } }
 function ss(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch{} }
 function genCode(){ return Math.random().toString(36).substring(2,8).toUpperCase(); }
 function getPlantCare(name){ if(!name) return PLANT_CARE_DB["default"]; const l=name.toLowerCase(); for(const k of Object.keys(PLANT_CARE_DB)){ if(l.includes(k)||k.includes(l)) return PLANT_CARE_DB[k]; } return PLANT_CARE_DB["default"]; }
 function getRecycleInfo(label){ if(!label) return RECYCLE_MAP["default"]; const l=label.toLowerCase(); for(const k of Object.keys(RECYCLE_MAP)){ if(l.includes(k)||k.includes(l)) return RECYCLE_MAP[k]; } return RECYCLE_MAP["default"]; }
-function getLevel(pts){ if(pts<100) return {name:"Semilla",emoji:"🌱",next:100}; if(pts<300) return {name:"Brote",emoji:"🌿",next:300}; if(pts<600) return {name:"Árbol joven",emoji:"🌳",next:600}; if(pts<1000) return {name:"Guardián",emoji:"🌍",next:1000}; return {name:"Maestro Eco",emoji:"👑",next:9999}; }
+function getLevel(pts){ if(pts<100) return {name:"Semilla",emoji:"🌱",next:100}; if(pts<300) return {name:"Brote",emoji:"🌿",next:300}; if(pts<600) return {name:"Arbol joven",emoji:"🌳",next:600}; if(pts<1000) return {name:"Guardian",emoji:"🌍",next:1000}; return {name:"Maestro Eco",emoji:"👑",next:9999}; }
 
 function toBase64(file){ return new Promise((resolve,reject)=>{ const r=new FileReader(); r.onload=()=>resolve(r.result.split(",")[1]); r.onerror=reject; r.readAsDataURL(file); }); }
+
+function cleanJSON(text){
+  let s = text;
+  s = s.split("json").join("");
+  s = s.split("~~~").join("");
+  s = s.trim();
+  const start = s.indexOf("{");
+  const end = s.lastIndexOf("}");
+  if(start>=0 && end>=0) return s.substring(start, end+1);
+  return s;
+}
 
 export default function EcoQuest() {
   const [tab, setTab] = useState("scan");
@@ -96,9 +106,9 @@ export default function EcoQuest() {
   const leaderboard = [
     {name:"Alba",avatar:"🌸",points:340},
     {name:"Marcos",avatar:"🌳",points:280},
-    {name:"Lucía",avatar:"🍃",points:210},
+    {name:"Lucia",avatar:"🍃",points:210},
     {name:"Dani",avatar:"🌻",points:150},
-    {name:userName||"Tú",avatar:userAvatar,points:myPoints,isYou:true},
+    {name:userName||"Tu",avatar:userAvatar,points:myPoints,isYou:true},
   ].sort((a,b)=>b.points-a.points);
   const myRank = leaderboard.findIndex(f=>f.isYou)+1;
 
@@ -133,7 +143,7 @@ export default function EcoQuest() {
       if(!unlockedAchievements.includes(ach.id)&&ach.check(plantCount,recycleCount,invasoraCount)){
         setUnlockedAchievements(prev=>{ if(prev.includes(ach.id)) return prev;
           setMyPoints(pts=>pts+ach.bonus);
-          showNotif(`🏆 Logro: ${ach.title} (+${ach.bonus}pts)`,ach.emoji);
+          showNotif("🏆 Logro: "+ach.title+" (+"+ach.bonus+"pts)",ach.emoji);
           return [...prev,ach.id];
         });
       }
@@ -152,14 +162,14 @@ export default function EcoQuest() {
       if(prog>=ch.goal){
         setCompletedChallenges(prev=>{ if(prev.includes(ch.id)) return prev;
           setMyPoints(pts=>pts+ch.bonus);
-          showNotif(`🎯 Reto: ${ch.title} (+${ch.bonus}pts)`,ch.emoji);
+          showNotif("🎯 Reto: "+ch.title+" (+"+ch.bonus+"pts)",ch.emoji);
           return [...prev,ch.id];
         });
       }
     });
   },[plantCount,recycleCount,invasoraCount,recycleScanCount]);
 
-  const addPoints=(pts,label,emoji)=>{ setMyPoints(prev=>prev+pts); showNotif(`+${pts} pts — ${label}`,emoji); };
+  const addPoints=(pts,label,emoji)=>{ setMyPoints(prev=>prev+pts); showNotif("+"+pts+" pts — "+label,emoji); };
   const showNotif=(msg,emoji)=>{ setNotification({msg,emoji}); setTimeout(()=>setNotification(null),3000); };
 
   const handlePlantPhoto=async(e)=>{
@@ -167,22 +177,27 @@ export default function EcoQuest() {
     setScanning(true); setPlantResult(null);
     try{
       const b64=await toBase64(file);
+      const prompt = "Analiza esta imagen. Si hay una planta responde SOLO JSON sin marcadores: {\"type\":\"plant\",\"name\":\"nombre espanol\",\"scientific\":\"nombre cientifico\",\"origin\":\"region\",\"status\":\"Autoctona o Invasora o Cultivada\",\"points\":20,\"desc\":\"descripcion 1-2 frases\",\"confidence\":\"Alta o Media o Baja\",\"family\":\"familia\",\"observations\":\"numero observaciones\"} Si no hay planta responde: {\"type\":\"none\",\"message\":\"No se detecto ninguna planta\"}";
       const res=await fetch("https://api.anthropic.com/v1/messages",{
         method:"POST",
-        headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+        headers:{
+          "Content-Type":"application/json",
+          "anthropic-version":"2023-06-01",
+          "anthropic-dangerous-direct-browser-access":"true"
+        },
         body:JSON.stringify({
           model:"claude-haiku-4-5-20251001",
           max_tokens:800,
           messages:[{role:"user",content:[
             {type:"image",source:{type:"base64",media_type:file.type||"image/jpeg",data:b64}},
-            {type:"text",text:`Analiza esta imagen. Si hay una planta responde SOLO JSON sin markdown: {"type":"plant","name":"nombre español","scientific":"nombre científico","origin":"región","status":"Autóctona|Invasora|Cultivada","points":20,"desc":"descripción 1-2 frases","confidence":"Alta|Media|Baja","family":"familia","observations":"dato observaciones"} Si no hay planta: {"type":"none","message":"No se detectó ninguna planta"}`}
+            {type:"text",text:prompt}
           ]}]
         })
       });
       const data=await res.json();
-      const text=data.content?.[0]?.text||"";
-      const clean=text.replace(/```/g,"").replace(/json/g,"").trim();
-const parsed=JSON.parse(clean);
+      const text=(data.content&&data.content[0]&&data.content[0].text)||"";
+      const cleaned=cleanJSON(text);
+      const parsed=JSON.parse(cleaned);
       if(parsed.type==="plant"){
         const care=getPlantCare(parsed.name||parsed.scientific);
         setPlantResult({...parsed,care});
@@ -191,10 +206,10 @@ const parsed=JSON.parse(clean);
         if(parsed.status==="Invasora") setInvasoraCount(c=>c+1);
         addPoints(parsed.points,parsed.name,"🌿");
       } else {
-        setPlantResult({type:"none",message:parsed.message||"No se detectó ninguna planta."});
+        setPlantResult({type:"none",message:parsed.message||"No se detecto ninguna planta."});
       }
     }catch(err){
-      setPlantResult({type:"error",message:"Error al analizar. Inténtalo de nuevo."});
+      setPlantResult({type:"error",message:"Error al analizar. Intentalo de nuevo."});
     }
     setScanning(false);
   };
@@ -215,7 +230,7 @@ const parsed=JSON.parse(clean);
             setRecycleScanCount(c=>c+1);
             addPoints(info.points,info.name,"♻️");
           } else {
-            setRecycleResult({type:"none",message:"No se detectó ningún objeto. Intenta con mejor iluminación."});
+            setRecycleResult({type:"none",message:"No se detecto ningun objeto. Intenta con mejor iluminacion."});
           }
         } else {
           const items=["bottle","can","book","cup","cell phone","banana"];
@@ -225,7 +240,7 @@ const parsed=JSON.parse(clean);
           setRecycleScanCount(c=>c+1);
           addPoints(info.points,info.name,"♻️");
         }
-      }catch{ setRecycleResult({type:"error",message:"Error al analizar. Inténtalo de nuevo."}); }
+      }catch{ setRecycleResult({type:"error",message:"Error al analizar. Intentalo de nuevo."}); }
       URL.revokeObjectURL(url);
       setRecycleScanningAI(false);
     };
@@ -234,25 +249,25 @@ const parsed=JSON.parse(clean);
   };
 
   const shareWhatsApp=(plant)=>{
-    const text=`🌿 He encontrado: *${plant.name}* (${plant.scientific})\n\n📍 Estado: ${plant.status}\n💧 Riego: ${plant.care?.freq}\n☀️ Luz: ${plant.care?.light}\n\n¡Identificado con EcoQuest! 🌍`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,"_blank");
+    const text="🌿 He encontrado: "+plant.name+" ("+plant.scientific+")\n\nEstado: "+plant.status+"\nRiego: "+(plant.care&&plant.care.freq)+"\nLuz: "+(plant.care&&plant.care.light)+"\n\nIdentificado con EcoQuest!";
+    window.open("https://wa.me/?text="+encodeURIComponent(text),"_blank");
   };
 
   const createLeague=()=>{
     if(!newLeagueName.trim()) return;
-    const l={ id:genCode(), name:newLeagueName, maxPlayers:parseInt(newLeagueMax), code:genCode(), members:[{name:userName||"Tú",avatar:userAvatar,points:myPoints,code:myCode,isYou:true}] };
+    const l={ id:genCode(), name:newLeagueName, maxPlayers:parseInt(newLeagueMax), code:genCode(), members:[{name:userName||"Tu",avatar:userAvatar,points:myPoints,code:myCode,isYou:true}] };
     setLeagues(prev=>[...prev,l]); setShowCreateLeague(false); setNewLeagueName("");
-    showNotif(`¡Liga "${l.name}" creada!`,"🏆");
+    showNotif("Liga "+l.name+" creada!","🏆");
   };
 
   const joinLeague=()=>{
     if(!joinCode.trim()) return;
     const exists=leagues.find(l=>l.code===joinCode.toUpperCase());
     if(exists){
-      if(exists.members.find(m=>m.code===myCode)){ showNotif("Ya estás en esta liga","⚠️"); return; }
-      setLeagues(prev=>prev.map(l=>l.id===exists.id?{...l,members:[...l.members,{name:userName||"Tú",avatar:userAvatar,points:myPoints,code:myCode,isYou:true}]}:l));
-      showNotif(`¡Te uniste a "${exists.name}"!`,"🎉");
-    } else { showNotif("Código no encontrado","❌"); }
+      if(exists.members.find(m=>m.code===myCode)){ showNotif("Ya estas en esta liga","⚠️"); return; }
+      setLeagues(prev=>prev.map(l=>l.id===exists.id?{...l,members:[...l.members,{name:userName||"Tu",avatar:userAvatar,points:myPoints,code:myCode,isYou:true}]}:l));
+      showNotif("Te uniste a "+exists.name+"!","🎉");
+    } else { showNotif("Codigo no encontrado","❌"); }
     setJoinCode(""); setShowJoinLeague(false);
   };
 
@@ -262,17 +277,15 @@ const parsed=JSON.parse(clean);
     <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#0a1628 0%,#0d2218 50%,#0a1628 100%)",fontFamily:"Georgia,serif",color:"#e8f5e9",overflowX:"hidden"}}>
       <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0}}>
         {[...Array(12)].map((_,i)=>(
-          <div key={i} style={{position:"absolute",width:3+(i%4)*2,height:3+(i%4)*2,borderRadius:"50%",background:i%3===0?"#4ade8044":"#22d3ee22",left:`${(i*37+10)%95}%`,top:`${(i*53+7)%90}%`,animation:`float ${3+i%4}s ease-in-out infinite alternate`,animationDelay:`${i*0.3}s`}}/>
+          <div key={i} style={{position:"absolute",width:3+(i%4)*2,height:3+(i%4)*2,borderRadius:"50%",background:i%3===0?"#4ade8044":"#22d3ee22",left:((i*37+10)%95)+"%",top:((i*53+7)%90)+"%",animation:"float "+(3+i%4)+"s ease-in-out infinite alternate",animationDelay:(i*0.3)+"s"}}/>
         ))}
       </div>
-      <style>{`
-        @keyframes float{from{transform:translateY(0)}to{transform:translateY(-10px)}}
-        @keyframes slideIn{from{transform:translateY(-40px);opacity:0}to{transform:translateY(0);opacity:1}}
-        @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-        input[type=file]{position:absolute;width:100%;height:100%;top:0;left:0;opacity:0;cursor:pointer;z-index:10}
-        input::placeholder{color:rgba(255,255,255,0.35)}
-        .btn{transition:all 0.15s;cursor:pointer}.btn:active{transform:scale(0.95)}
-      `}</style>
+      <style>{
+        "@keyframes float{from{transform:translateY(0)}to{transform:translateY(-10px)}}" +
+        "@keyframes slideIn{from{transform:translateY(-40px);opacity:0}to{transform:translateY(0);opacity:1}}" +
+        "@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}" +
+        "input[type=file]{position:absolute;width:100%;height:100%;top:0;left:0;opacity:0;cursor:pointer;z-index:10}"
+      }</style>
 
       {notification&&(
         <div style={{position:"fixed",top:20,left:"50%",transform:"translateX(-50%)",background:"linear-gradient(135deg,#16a34a,#15803d)",color:"white",borderRadius:50,padding:"12px 24px",fontWeight:"700",fontSize:13,zIndex:1000,boxShadow:"0 8px 32px #4ade8066",animation:"slideIn 0.3s ease",display:"flex",alignItems:"center",gap:8,maxWidth:"88vw",textAlign:"center"}}>
@@ -282,14 +295,12 @@ const parsed=JSON.parse(clean);
 
       <div style={{maxWidth:480,margin:"0 auto",padding:"0 0 90px",position:"relative",zIndex:1}}>
 
-        {/* HEADER */}
         <div style={{padding:"28px 20px 16px",textAlign:"center"}}>
           <div style={{fontSize:11,letterSpacing:4,color:"#4ade80",textTransform:"uppercase",marginBottom:6}}>EcoQuest</div>
           <div style={{fontSize:38,fontWeight:"900",letterSpacing:-1,lineHeight:1,background:"linear-gradient(135deg,#4ade80,#22d3ee)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>🌿 EcoQuest</div>
           <div style={{fontSize:12,color:"#86efac88",marginTop:4}}>Identifica · Recicla · Compite</div>
         </div>
 
-        {/* STATS */}
         <div style={{margin:"0 16px 16px",display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
           {[{label:"Puntos",val:myPoints,emoji:"⭐",color:"#fbbf24"},{label:"Especies",val:uniquePlants,emoji:"🌿",color:"#4ade80"},{label:"Reciclado",val:totalRecycled,emoji:"♻️",color:"#22d3ee"}].map(s=>(
             <div key={s.label} style={{background:"rgba(255,255,255,0.05)",borderRadius:14,padding:"12px 6px",textAlign:"center",border:"1px solid rgba(255,255,255,0.07)"}}>
@@ -300,26 +311,24 @@ const parsed=JSON.parse(clean);
           ))}
         </div>
 
-        {/* TABS */}
         <div style={{display:"flex",margin:"0 16px 20px",background:"rgba(0,0,0,0.35)",borderRadius:16,padding:4,gap:2}}>
           {[{id:"scan",label:"📸"},{id:"recycle_scan",label:"♻️"},{id:"achievements",label:"🏆"},{id:"league",label:"🥇"},{id:"liga",label:"👥"},{id:"profile",label:"👤"}].map(t=>(
             <button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,padding:"10px 2px",borderRadius:12,border:"none",background:tab===t.id?"linear-gradient(135deg,#16a34a,#0d9488)":"transparent",color:tab===t.id?"white":"#86efac88",fontSize:11,fontWeight:tab===t.id?"700":"400",cursor:"pointer"}}>{t.label}</button>
           ))}
         </div>
 
-        {/* ══ PLANTAS ══ */}
         {tab==="scan"&&(
           <div style={{padding:"0 16px"}}>
             <div style={{position:"relative",background:"rgba(255,255,255,0.04)",borderRadius:22,padding:24,border:"2px dashed rgba(74,222,128,0.3)",textAlign:"center",marginBottom:20,overflow:"hidden"}}>
               <input type="file" accept="image/*" onChange={handlePlantPhoto}/>
               {scanning?(
-                <div><div style={{fontSize:48,animation:"spin 1s linear infinite",display:"inline-block"}}>🔍</div><div style={{marginTop:14,color:"#4ade80",fontSize:14}}>Identificando planta...</div><div style={{marginTop:4,color:"#86efac88",fontSize:11}}>Puede tardar unos segundos</div></div>
+                <div><div style={{fontSize:48,animation:"spin 1s linear infinite",display:"inline-block"}}>🔍</div><div style={{marginTop:14,color:"#4ade80",fontSize:14}}>Identificando planta...</div></div>
               ):(
                 <>
                   <div style={{fontSize:52}}>📸</div>
-                  <div style={{fontSize:16,fontWeight:"700",color:"#4ade80",marginTop:10}}>Fotografía una planta</div>
-                  <div style={{fontSize:12,color:"#86efac88",marginTop:4}}>Identificación gratuita con iNaturalist</div>
-                  <div style={{marginTop:14,display:"inline-block",background:"linear-gradient(135deg,#16a34a,#0d9488)",color:"white",borderRadius:50,padding:"10px 26px",fontSize:13,fontWeight:"700",pointerEvents:"none"}}>Abrir cámara</div>
+                  <div style={{fontSize:16,fontWeight:"700",color:"#4ade80",marginTop:10}}>Fotografia una planta</div>
+                  <div style={{fontSize:12,color:"#86efac88",marginTop:4}}>La IA la identificara al instante</div>
+                  <div style={{marginTop:14,display:"inline-block",background:"linear-gradient(135deg,#16a34a,#0d9488)",color:"white",borderRadius:50,padding:"10px 26px",fontSize:13,fontWeight:"700",pointerEvents:"none"}}>Abrir camara</div>
                 </>
               )}
             </div>
@@ -341,9 +350,9 @@ const parsed=JSON.parse(clean);
                   </div>
                 </div>
                 <div style={{fontSize:12,color:"#cce5cc",lineHeight:1.6,marginBottom:14}}>{plantResult.desc}</div>
-                <div style={{fontSize:11,color:"#4ade80",fontWeight:"700",marginBottom:8,letterSpacing:2,textTransform:"uppercase"}}>🌱 Guía de cuidados</div>
+                <div style={{fontSize:11,color:"#4ade80",fontWeight:"700",marginBottom:8,letterSpacing:2,textTransform:"uppercase"}}>🌱 Guia de cuidados</div>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:10}}>
-                  {[{icon:"💧",label:"Riego",val:plantResult.care?.water},{icon:"📅",label:"Frecuencia",val:plantResult.care?.freq},{icon:"☀️",label:"Luz",val:plantResult.care?.light},{icon:"🌡️",label:"Temperatura",val:plantResult.care?.temp},{icon:"💦",label:"Humedad",val:plantResult.care?.humidity},{icon:"🪴",label:"Sustrato",val:plantResult.care?.soil},{icon:"🌿",label:"Abono",val:plantResult.care?.fertilizer},{icon:"♾️",label:"Ciclo",val:plantResult.care?.lifespan}].map(c=>(
+                  {[{icon:"💧",label:"Riego",val:plantResult.care&&plantResult.care.water},{icon:"📅",label:"Frecuencia",val:plantResult.care&&plantResult.care.freq},{icon:"☀️",label:"Luz",val:plantResult.care&&plantResult.care.light},{icon:"🌡️",label:"Temperatura",val:plantResult.care&&plantResult.care.temp},{icon:"💦",label:"Humedad",val:plantResult.care&&plantResult.care.humidity},{icon:"🪴",label:"Sustrato",val:plantResult.care&&plantResult.care.soil},{icon:"🌿",label:"Abono",val:plantResult.care&&plantResult.care.fertilizer},{icon:"♾️",label:"Ciclo",val:plantResult.care&&plantResult.care.lifespan}].map(c=>(
                     <div key={c.label} style={{background:"rgba(255,255,255,0.05)",borderRadius:10,padding:"8px 10px"}}>
                       <div style={{fontSize:9,color:"#86efac88",marginBottom:2}}>{c.icon} {c.label}</div>
                       <div style={{fontSize:11,fontWeight:"700"}}>{c.val}</div>
@@ -352,11 +361,7 @@ const parsed=JSON.parse(clean);
                 </div>
                 <div style={{background:"rgba(74,222,128,0.08)",borderRadius:10,padding:"10px 12px",marginBottom:8}}>
                   <div style={{fontSize:9,color:"#4ade80",fontWeight:"700",marginBottom:3}}>💡 CONSEJOS</div>
-                  <div style={{fontSize:11,color:"#cce5cc"}}>{plantResult.care?.tips}</div>
-                </div>
-                <div style={{background:`rgba(${plantResult.care?.toxic==="No tóxica"?"74,222,128":"248,113,113"},0.08)`,borderRadius:10,padding:"8px 12px",marginBottom:12}}>
-                  <div style={{fontSize:9,color:plantResult.care?.toxic==="No tóxica"?"#4ade80":"#f87171",fontWeight:"700",marginBottom:2}}>⚠️ TOXICIDAD</div>
-                  <div style={{fontSize:11,color:"#cce5cc"}}>{plantResult.care?.toxic}</div>
+                  <div style={{fontSize:11,color:"#cce5cc"}}>{plantResult.care&&plantResult.care.tips}</div>
                 </div>
                 <div style={{background:"rgba(168,85,247,0.08)",borderRadius:10,padding:"8px 12px",marginBottom:12}}>
                   <div style={{fontSize:9,color:"#c084fc",fontWeight:"700",marginBottom:2}}>✨ DATO CURIOSO</div>
@@ -377,10 +382,10 @@ const parsed=JSON.parse(clean);
               <div style={{background:"linear-gradient(135deg,rgba(251,191,36,0.1),rgba(251,191,36,0.05))",borderRadius:16,padding:"12px 14px",border:"1px solid rgba(251,191,36,0.2)",marginBottom:16,display:"flex",alignItems:"center",gap:10}}>
                 <div style={{fontSize:26}}>🎯</div>
                 <div style={{flex:1}}>
-                  <div style={{fontSize:11,color:"#fbbf24",fontWeight:"700"}}>Próximo objetivo</div>
-                  <div style={{fontSize:10,color:"#86efac88",marginTop:2}}>{uniquePlants>=nextPlantAch.need?"¡Completado!":`${nextPlantAch.need-uniquePlants} especies más`}</div>
+                  <div style={{fontSize:11,color:"#fbbf24",fontWeight:"700"}}>Proximo objetivo</div>
+                  <div style={{fontSize:10,color:"#86efac88",marginTop:2}}>{uniquePlants>=nextPlantAch.need?"Completado!":(nextPlantAch.need-uniquePlants)+" especies mas"}</div>
                   <div style={{marginTop:4,height:3,background:"rgba(255,255,255,0.1)",borderRadius:2}}>
-                    <div style={{height:"100%",borderRadius:2,width:`${Math.min((uniquePlants/nextPlantAch.need)*100,100)}%`,background:"linear-gradient(90deg,#fbbf24,#f59e0b)"}}/>
+                    <div style={{height:"100%",borderRadius:2,width:Math.min((uniquePlants/nextPlantAch.need)*100,100)+"%",background:"linear-gradient(90deg,#fbbf24,#f59e0b)"}}/>
                   </div>
                 </div>
                 <div style={{fontSize:11,color:"#fbbf24",fontWeight:"700"}}>{uniquePlants}/{nextPlantAch.need}</div>
@@ -393,7 +398,7 @@ const parsed=JSON.parse(clean);
                 <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                   {Object.entries(plantCount).map(([name,count])=>(
                     <div key={name} style={{background:"rgba(74,222,128,0.08)",borderRadius:50,padding:"4px 12px",fontSize:11,color:"#4ade80",border:"1px solid rgba(74,222,128,0.15)",display:"flex",alignItems:"center",gap:4}}>
-                      {name}{count>1&&<span style={{background:"rgba(74,222,128,0.2)",borderRadius:50,padding:"0 5px",fontSize:9}}>×{count}</span>}
+                      {name}{count>1&&<span style={{background:"rgba(74,222,128,0.2)",borderRadius:50,padding:"0 5px",fontSize:9}}>x{count}</span>}
                     </div>
                   ))}
                 </div>
@@ -402,13 +407,12 @@ const parsed=JSON.parse(clean);
           </div>
         )}
 
-        {/* ══ RECICLAJE ══ */}
         {tab==="recycle_scan"&&(
           <div style={{padding:"0 16px"}}>
             {modelLoading&&(
               <div style={{background:"rgba(34,211,238,0.08)",borderRadius:14,padding:"12px 16px",border:"1px solid rgba(34,211,238,0.15)",marginBottom:14,display:"flex",alignItems:"center",gap:10}}>
                 <div style={{fontSize:20,animation:"spin 1s linear infinite",display:"inline-block"}}>⚙️</div>
-                <div><div style={{fontSize:12,fontWeight:"700",color:"#22d3ee"}}>Cargando IA...</div><div style={{fontSize:10,color:"#86efac88",marginTop:2}}>Primera carga ~10 segundos</div></div>
+                <div><div style={{fontSize:12,fontWeight:"700",color:"#22d3ee"}}>Cargando IA...</div><div style={{fontSize:10,color:"#86efac88",marginTop:2}}>Primera carga unos segundos</div></div>
               </div>
             )}
             {tfModel&&!modelLoading&&(
@@ -417,7 +421,6 @@ const parsed=JSON.parse(clean);
                 <div style={{fontSize:12,color:"#4ade80",fontWeight:"700"}}>IA lista — Reconoce 80+ objetos</div>
               </div>
             )}
-
             <div style={{position:"relative",background:"rgba(255,255,255,0.04)",borderRadius:22,padding:24,border:"2px dashed rgba(34,211,238,0.3)",textAlign:"center",marginBottom:20,overflow:"hidden"}}>
               <input type="file" accept="image/*" onChange={handleRecyclePhoto}/>
               {recycleScanningAI?(
@@ -425,9 +428,9 @@ const parsed=JSON.parse(clean);
               ):(
                 <>
                   <div style={{fontSize:52}}>♻️</div>
-                  <div style={{fontSize:16,fontWeight:"700",color:"#22d3ee",marginTop:10}}>Fotografía un objeto</div>
-                  <div style={{fontSize:12,color:"#86efac88",marginTop:4}}>La IA detecta qué es y dónde reciclarlo</div>
-                  <div style={{marginTop:14,display:"inline-block",background:"linear-gradient(135deg,#0d9488,#0284c7)",color:"white",borderRadius:50,padding:"10px 26px",fontSize:13,fontWeight:"700",pointerEvents:"none"}}>Abrir cámara</div>
+                  <div style={{fontSize:16,fontWeight:"700",color:"#22d3ee",marginTop:10}}>Fotografia un objeto</div>
+                  <div style={{fontSize:12,color:"#86efac88",marginTop:4}}>La IA detecta que es y donde reciclarlo</div>
+                  <div style={{marginTop:14,display:"inline-block",background:"linear-gradient(135deg,#0d9488,#0284c7)",color:"white",borderRadius:50,padding:"10px 26px",fontSize:13,fontWeight:"700",pointerEvents:"none"}}>Abrir camara</div>
                 </>
               )}
             </div>
@@ -442,13 +445,13 @@ const parsed=JSON.parse(clean);
                     <div style={{fontSize:11,color:"#fbbf24",marginTop:2}}>⭐ +{recycleResult.points}pts</div>
                   </div>
                 </div>
-                <div style={{background:(binColors[recycleResult.bin]||"#888")+"22",borderRadius:14,padding:"14px 16px",marginBottom:12,border:`1px solid ${(binColors[recycleResult.bin]||"#888")}44`,textAlign:"center"}}>
+                <div style={{background:(binColors[recycleResult.bin]||"#888")+"22",borderRadius:14,padding:"14px 16px",marginBottom:12,border:"1px solid "+(binColors[recycleResult.bin]||"#888")+"44",textAlign:"center"}}>
                   <div style={{fontSize:11,color:"#86efac88",marginBottom:4}}>CONTENEDOR</div>
                   <div style={{fontSize:24,fontWeight:"900",color:binColors[recycleResult.bin]||"#888"}}>🗑️ {recycleResult.bin}</div>
                 </div>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
                   <div style={{background:"rgba(255,255,255,0.05)",borderRadius:10,padding:"10px 12px"}}>
-                    <div style={{fontSize:9,color:"#86efac88",marginBottom:3}}>⏳ DESCOMPOSICIÓN</div>
+                    <div style={{fontSize:9,color:"#86efac88",marginBottom:3}}>⏳ DESCOMPOSICION</div>
                     <div style={{fontSize:11,fontWeight:"700",color:"#f87171"}}>{recycleResult.decompose}</div>
                   </div>
                   <div style={{background:"rgba(255,255,255,0.05)",borderRadius:10,padding:"10px 12px"}}>
@@ -472,19 +475,18 @@ const parsed=JSON.parse(clean);
 
             <div style={{fontSize:10,letterSpacing:3,color:"#86efac88",textTransform:"uppercase",marginBottom:12}}>O registra manualmente</div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
-              {[{id:"plastic",label:"Plástico",emoji:"🧴",pts:10,color:"#FFD700"},{id:"glass",label:"Vidrio",emoji:"🍾",pts:15,color:"#88D498"},{id:"paper",label:"Papel",emoji:"📦",pts:8,color:"#A8DADC"},{id:"metal",label:"Metal",emoji:"🥫",pts:12,color:"#C0C0C0"},{id:"organic",label:"Orgánico",emoji:"🍂",pts:5,color:"#8B6914"},{id:"battery",label:"Pila",emoji:"🔋",pts:20,color:"#FF6B6B"}].map(item=>(
-                <div key={item.id} className="btn" onClick={()=>{ setRecycleCount(prev=>({...prev,[item.id]:(prev[item.id]||0)+1})); addPoints(item.pts,`Reciclé ${item.label}`,item.emoji); }} style={{background:"rgba(255,255,255,0.04)",borderRadius:14,padding:"14px 8px",textAlign:"center",border:`1px solid ${item.color}33`,cursor:"pointer"}}>
+              {[{id:"plastic",label:"Plastico",emoji:"🧴",pts:10,color:"#FFD700"},{id:"glass",label:"Vidrio",emoji:"🍾",pts:15,color:"#88D498"},{id:"paper",label:"Papel",emoji:"📦",pts:8,color:"#A8DADC"},{id:"metal",label:"Metal",emoji:"🥫",pts:12,color:"#C0C0C0"},{id:"organic",label:"Organico",emoji:"🍂",pts:5,color:"#8B6914"},{id:"battery",label:"Pila",emoji:"🔋",pts:20,color:"#FF6B6B"}].map(item=>(
+                <div key={item.id} onClick={()=>{ setRecycleCount(prev=>({...prev,[item.id]:(prev[item.id]||0)+1})); addPoints(item.pts,"Recicle "+item.label,item.emoji); }} style={{background:"rgba(255,255,255,0.04)",borderRadius:14,padding:"14px 8px",textAlign:"center",border:"1px solid "+item.color+"33",cursor:"pointer"}}>
                   <div style={{fontSize:30}}>{item.emoji}</div>
                   <div style={{fontSize:11,fontWeight:"700",marginTop:6,color:item.color}}>{item.label}</div>
                   <div style={{fontSize:9,color:"#86efac88",marginTop:2}}>+{item.pts}pts</div>
-                  {recycleCount[item.id]>0&&<div style={{marginTop:4,background:item.color+"22",borderRadius:50,padding:"1px 6px",display:"inline-block",fontSize:9,color:item.color,fontWeight:"700"}}>×{recycleCount[item.id]}</div>}
+                  {recycleCount[item.id]>0&&<div style={{marginTop:4,background:item.color+"22",borderRadius:50,padding:"1px 6px",display:"inline-block",fontSize:9,color:item.color,fontWeight:"700"}}>x{recycleCount[item.id]}</div>}
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* ══ LOGROS ══ */}
         {tab==="achievements"&&(
           <div style={{padding:"0 16px"}}>
             <div style={{fontSize:10,letterSpacing:3,color:"#22d3ee",textTransform:"uppercase",marginBottom:12}}>🎯 Retos semanales</div>
@@ -502,7 +504,7 @@ const parsed=JSON.parse(clean);
                       </div>
                       <div style={{fontSize:11,color:"#86efac88",marginTop:2}}>{ch.desc}</div>
                       <div style={{marginTop:6,height:3,background:"rgba(255,255,255,0.1)",borderRadius:2}}>
-                        <div style={{height:"100%",borderRadius:2,width:`${Math.min((prog/ch.goal)*100,100)}%`,background:"linear-gradient(90deg,#22d3ee,#0284c7)"}}/>
+                        <div style={{height:"100%",borderRadius:2,width:Math.min((prog/ch.goal)*100,100)+"%",background:"linear-gradient(90deg,#22d3ee,#0284c7)"}}/>
                       </div>
                       <div style={{fontSize:9,color:"#86efac44",marginTop:2}}>{Math.min(prog,ch.goal)}/{ch.goal}</div>
                     </div>
@@ -530,11 +532,10 @@ const parsed=JSON.parse(clean);
           </div>
         )}
 
-        {/* ══ LIGA GLOBAL ══ */}
         {tab==="league"&&(
           <div style={{padding:"0 16px"}}>
             <div style={{textAlign:"center",marginBottom:20}}>
-              <div style={{fontSize:10,letterSpacing:3,color:"#86efac88",textTransform:"uppercase"}}>Clasificación global</div>
+              <div style={{fontSize:10,letterSpacing:3,color:"#86efac88",textTransform:"uppercase"}}>Clasificacion global</div>
               <div style={{fontSize:60,fontWeight:"900",color:"#fbbf24",lineHeight:1}}>#{myRank}</div>
               <div style={{color:"#86efac88",fontSize:12}}>de {leaderboard.length} jugadores</div>
             </div>
@@ -544,12 +545,12 @@ const parsed=JSON.parse(clean);
                   <div style={{fontSize:20,flexShrink:0}}>{i<3?["🥇","🥈","🥉"][i]:<span style={{color:"#86efac88",fontWeight:"700",fontSize:13}}>{i+1}</span>}</div>
                   <div style={{fontSize:26}}>{f.avatar||"🌿"}</div>
                   <div style={{flex:1}}>
-                    <div style={{fontSize:14,fontWeight:f.isYou?"800":"500"}}>{f.name}{f.isYou&&<span style={{fontSize:10,color:"#4ade80"}}> (tú)</span>}</div>
+                    <div style={{fontSize:14,fontWeight:f.isYou?"800":"500"}}>{f.name}{f.isYou&&<span style={{fontSize:10,color:"#4ade80"}}> (tu)</span>}</div>
                     <div style={{fontSize:11,color:"#86efac88"}}>{f.points} pts</div>
                   </div>
                   <div style={{width:60}}>
                     <div style={{height:4,background:"rgba(255,255,255,0.1)",borderRadius:2,overflow:"hidden"}}>
-                      <div style={{height:"100%",borderRadius:2,width:`${Math.min((f.points/Math.max(...leaderboard.map(l=>l.points),1))*100,100)}%`,background:f.isYou?"linear-gradient(90deg,#4ade80,#22d3ee)":"rgba(255,255,255,0.25)"}}/>
+                      <div style={{height:"100%",borderRadius:2,width:Math.min((f.points/Math.max(...leaderboard.map(l=>l.points),1))*100,100)+"%",background:f.isYou?"linear-gradient(90deg,#4ade80,#22d3ee)":"rgba(255,255,255,0.25)"}}/>
                     </div>
                   </div>
                 </div>
@@ -558,11 +559,10 @@ const parsed=JSON.parse(clean);
           </div>
         )}
 
-        {/* ══ LIGA PRIVADA ══ */}
         {tab==="liga"&&(
           <div style={{padding:"0 16px"}}>
             <div style={{background:"rgba(255,255,255,0.04)",borderRadius:18,padding:18,border:"1px solid rgba(255,255,255,0.07)",marginBottom:14,textAlign:"center"}}>
-              <div style={{fontSize:11,color:"#86efac88",marginBottom:6}}>Tu código de jugador</div>
+              <div style={{fontSize:11,color:"#86efac88",marginBottom:6}}>Tu codigo de jugador</div>
               <div style={{fontSize:26,fontWeight:"900",letterSpacing:6,color:"#4ade80",background:"rgba(74,222,128,0.1)",borderRadius:10,padding:"10px 18px",display:"inline-block"}}>{myCode}</div>
               <div style={{fontSize:10,color:"#86efac66",marginTop:4}}>Comparte con tus amigos</div>
             </div>
@@ -574,10 +574,10 @@ const parsed=JSON.parse(clean);
               <div style={{background:"rgba(22,163,74,0.08)",borderRadius:18,padding:18,border:"1px solid rgba(74,222,128,0.15)",marginBottom:14}}>
                 <div style={{fontSize:13,fontWeight:"700",color:"#4ade80",marginBottom:12}}>Nueva liga</div>
                 <input value={newLeagueName} onChange={e=>setNewLeagueName(e.target.value)} placeholder="Nombre de la liga..." style={{width:"100%",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(74,222,128,0.15)",borderRadius:10,padding:"10px 12px",color:"white",fontSize:12,outline:"none",boxSizing:"border-box",marginBottom:10}}/>
-                <div style={{fontSize:11,color:"#86efac88",marginBottom:6}}>Máximo jugadores</div>
+                <div style={{fontSize:11,color:"#86efac88",marginBottom:6}}>Maximo jugadores</div>
                 <div style={{display:"flex",gap:6,marginBottom:12}}>
                   {["3","5","8","10"].map(n=>(
-                    <button key={n} onClick={()=>setNewLeagueMax(n)} style={{flex:1,padding:"8px",borderRadius:8,border:`1px solid ${newLeagueMax===n?"#4ade80":"rgba(255,255,255,0.08)"}`,background:newLeagueMax===n?"rgba(74,222,128,0.15)":"transparent",color:newLeagueMax===n?"#4ade80":"#86efac88",cursor:"pointer",fontSize:13,fontWeight:"700"}}>{n}</button>
+                    <button key={n} onClick={()=>setNewLeagueMax(n)} style={{flex:1,padding:"8px",borderRadius:8,border:"1px solid "+(newLeagueMax===n?"#4ade80":"rgba(255,255,255,0.08)"),background:newLeagueMax===n?"rgba(74,222,128,0.15)":"transparent",color:newLeagueMax===n?"#4ade80":"#86efac88",cursor:"pointer",fontSize:13,fontWeight:"700"}}>{n}</button>
                   ))}
                 </div>
                 <div style={{display:"flex",gap:8}}>
@@ -589,7 +589,7 @@ const parsed=JSON.parse(clean);
             {showJoinLeague&&(
               <div style={{background:"rgba(34,211,238,0.06)",borderRadius:18,padding:18,border:"1px solid rgba(34,211,238,0.15)",marginBottom:14}}>
                 <div style={{fontSize:13,fontWeight:"700",color:"#22d3ee",marginBottom:12}}>Unirse a una liga</div>
-                <input value={joinCode} onChange={e=>setJoinCode(e.target.value.toUpperCase())} placeholder="Código de la liga..." style={{width:"100%",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(34,211,238,0.15)",borderRadius:10,padding:"10px 12px",color:"white",fontSize:13,outline:"none",boxSizing:"border-box",letterSpacing:3,marginBottom:12}}/>
+                <input value={joinCode} onChange={e=>setJoinCode(e.target.value.toUpperCase())} placeholder="Codigo de la liga..." style={{width:"100%",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(34,211,238,0.15)",borderRadius:10,padding:"10px 12px",color:"white",fontSize:13,outline:"none",boxSizing:"border-box",letterSpacing:3,marginBottom:12}}/>
                 <div style={{display:"flex",gap:8}}>
                   <button onClick={joinLeague} style={{flex:1,background:"linear-gradient(135deg,#0d9488,#0284c7)",color:"white",border:"none",borderRadius:10,padding:"11px",fontSize:12,fontWeight:"700",cursor:"pointer"}}>Unirse</button>
                   <button onClick={()=>setShowJoinLeague(false)} style={{flex:1,background:"rgba(255,255,255,0.04)",color:"#86efac88",border:"1px solid rgba(255,255,255,0.08)",borderRadius:10,padding:"11px",fontSize:12,cursor:"pointer"}}>Cancelar</button>
@@ -598,7 +598,7 @@ const parsed=JSON.parse(clean);
             )}
             {leagues.length===0?(
               <div style={{background:"rgba(255,255,255,0.03)",borderRadius:18,padding:36,textAlign:"center",color:"#86efac88",fontSize:13}}>
-                <div style={{fontSize:36,marginBottom:10}}>👥</div>¡Crea una liga o únete con un código!
+                <div style={{fontSize:36,marginBottom:10}}>👥</div>Crea una liga o unete con un codigo!
               </div>
             ):leagues.map(league=>{
               const sorted=[...league.members].sort((a,b)=>b.points-a.points);
@@ -606,13 +606,13 @@ const parsed=JSON.parse(clean);
                 <div key={league.id} style={{background:"rgba(255,255,255,0.04)",borderRadius:18,padding:18,border:"1px solid rgba(255,255,255,0.07)",marginBottom:12}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
                     <div><div style={{fontSize:15,fontWeight:"800"}}>{league.name}</div><div style={{fontSize:10,color:"#86efac88",marginTop:2}}>{league.members.length}/{league.maxPlayers} jugadores</div></div>
-                    <div style={{textAlign:"right"}}><div style={{fontSize:9,color:"#86efac88"}}>Código</div><div style={{fontSize:15,fontWeight:"900",letterSpacing:3,color:"#22d3ee"}}>{league.code}</div></div>
+                    <div style={{textAlign:"right"}}><div style={{fontSize:9,color:"#86efac88"}}>Codigo</div><div style={{fontSize:15,fontWeight:"900",letterSpacing:3,color:"#22d3ee"}}>{league.code}</div></div>
                   </div>
                   {sorted.map((m,i)=>(
                     <div key={m.code} style={{display:"flex",alignItems:"center",gap:10,marginBottom:6,background:m.isYou?"rgba(74,222,128,0.06)":"transparent",borderRadius:8,padding:"6px 8px"}}>
                       <div style={{fontSize:14}}>{i<3?["🥇","🥈","🥉"][i]:<span style={{color:"#86efac88",fontSize:11}}>{i+1}</span>}</div>
                       <div style={{fontSize:18}}>{m.avatar||"🌿"}</div>
-                      <div style={{flex:1,fontSize:12,fontWeight:m.isYou?"700":"400"}}>{m.name}{m.isYou&&<span style={{fontSize:9,color:"#4ade80"}}> (tú)</span>}</div>
+                      <div style={{flex:1,fontSize:12,fontWeight:m.isYou?"700":"400"}}>{m.name}{m.isYou&&<span style={{fontSize:9,color:"#4ade80"}}> (tu)</span>}</div>
                       <div style={{fontSize:12,fontWeight:"700",color:"#fbbf24"}}>{m.points}pts</div>
                     </div>
                   ))}
@@ -622,7 +622,6 @@ const parsed=JSON.parse(clean);
           </div>
         )}
 
-        {/* ══ PERFIL ══ */}
         {tab==="profile"&&(
           <div style={{padding:"0 16px"}}>
             <div style={{background:"rgba(255,255,255,0.04)",borderRadius:20,padding:24,border:"1px solid rgba(255,255,255,0.07)",marginBottom:14,textAlign:"center"}}>
@@ -647,7 +646,7 @@ const parsed=JSON.parse(clean);
                 <span style={{fontSize:12,fontWeight:"700",color:"#fbbf24"}}>{level.name}</span>
               </div>
               <div style={{marginTop:10,height:4,background:"rgba(255,255,255,0.1)",borderRadius:2,overflow:"hidden"}}>
-                <div style={{height:"100%",borderRadius:2,width:`${Math.min((myPoints/level.next)*100,100)}%`,background:"linear-gradient(90deg,#fbbf24,#f59e0b)"}}/>
+                <div style={{height:"100%",borderRadius:2,width:Math.min((myPoints/level.next)*100,100)+"%",background:"linear-gradient(90deg,#fbbf24,#f59e0b)"}}/>
               </div>
               <div style={{fontSize:10,color:"#fbbf2466",marginTop:3}}>{myPoints}/{level.next} pts para siguiente nivel</div>
             </div>
@@ -655,11 +654,11 @@ const parsed=JSON.parse(clean);
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
               {[
                 {label:"Puntos totales",val:myPoints,emoji:"⭐",color:"#fbbf24"},
-                {label:"Especies únicas",val:uniquePlants,emoji:"🌿",color:"#4ade80"},
+                {label:"Especies unicas",val:uniquePlants,emoji:"🌿",color:"#4ade80"},
                 {label:"Objetos reciclados",val:totalRecycled,emoji:"♻️",color:"#22d3ee"},
                 {label:"Escaneos IA",val:recycleScanCount,emoji:"🤖",color:"#a78bfa"},
-                {label:"Logros",val:`${unlockedAchievements.length}/${ACHIEVEMENTS.length}`,emoji:"🏆",color:"#f59e0b"},
-                {label:"Retos completados",val:`${completedChallenges.length}/${WEEKLY_CHALLENGES.length}`,emoji:"🎯",color:"#a78bfa"},
+                {label:"Logros",val:unlockedAchievements.length+"/"+ACHIEVEMENTS.length,emoji:"🏆",color:"#f59e0b"},
+                {label:"Retos completados",val:completedChallenges.length+"/"+WEEKLY_CHALLENGES.length,emoji:"🎯",color:"#a78bfa"},
               ].map(s=>(
                 <div key={s.label} style={{background:"rgba(255,255,255,0.04)",borderRadius:14,padding:"14px 12px",border:"1px solid rgba(255,255,255,0.07)"}}>
                   <div style={{fontSize:22}}>{s.emoji}</div>
