@@ -181,7 +181,8 @@ export default function EcoQuest() {
       });
       const data=await res.json();
       const text=data.content?.[0]?.text||"";
-      const parsed=JSON.parse(text.replace(/```json|```/g,"").trim());
+      const clean=text.replace(/```/g,"").replace(/json/g,"").trim();
+const parsed=JSON.parse(clean);
       if(parsed.type==="plant"){
         const care=getPlantCare(parsed.name||parsed.scientific);
         setPlantResult({...parsed,care});
