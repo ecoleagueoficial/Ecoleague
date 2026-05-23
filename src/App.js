@@ -167,52 +167,33 @@ export default function EcoQuest() {
     setScanning(true); setPlantResult(null);
     try{
       const b64=await toBase64(file);
-      const mediaType=file.type||"image/jpeg";
-      console.log("Iniciando análisis",file.name,file.size);
-      const proxies=[
-        `https://corsproxy.io/?https://api.inaturalist.org/v1/computervision/score_image`,
-        `https://api.allorigins.win/raw?url=${encodeURIComponent("https://api.inaturalist.org/v1/computervision/score_image")}`,
-      ];
-      let data=null;
-      for(const proxy of proxies){
-        try{
-          const formData=new FormData(); formData.append("image",file);
-          const res=await fetch(proxy,{ method:"POST", headers:{"Authorization":INAT_TOKEN}, body:formData });
-          if(res.ok){ data=await res.json(); break; }
-        }catch{}
-      }
-      if(!data){
-        // Fallback: use base64 approach
-        const res=await fetch("https://api.inaturalist.org/v1/computervision/score_image",{
-          method:"POST",
-          headers:{ "Authorization":INAT_TOKEN, "Content-Type":"application/json" },
-          body:JSON.stringify({ image:b64, image_type:mediaType })
-        });
-        if(res.ok) data=await res.json();
-      }
-      if(data&&data.results&&data.results[0]&&data.results[0].taxon){
-        const taxon=data.results[0].taxon;
-        const name=taxon.preferred_common_name||taxon.name;
-        const scientific=taxon.name;
-        const score=Math.round((data.results[0].combined_score||0)*100);
-        const pts=Math.min(60,Math.max(10,Math.round(score*0.6)));
-        const care=getPlantCare(name||scientific);
-        setPlantResult({ type:"plant", name:name||scientific, scientific,
-          origin:taxon.establishment_means?.establishment_means==="introduced"?"Introducida":"Nativa",
-          status:taxon.establishment_means?.establishment_means==="introduced"?"Invasora":"Autóctona",
-          points:pts, desc:taxon.wikipedia_summary||`Identificada con ${score}% de confianza.`,
-          confidence:score>70?"Alta":score>40?"Media":"Baja",
-          family:taxon.family_name||"desconocida",
-          observations:taxon.observations_count?.toLocaleString()||"miles de", care });
-        setPlantCount(prev=>({...prev,[name||scientific]:(prev[name||scientific]||0)+1}));
-        setPlantLog(prev=>[{name:name||scientific,scientific,emoji:"🌿",date:new Date().toLocaleDateString(),pts},...prev.slice(0,49)]);
-        if(taxon.establishment_means?.establishment_means==="introduced") setInvasoraCount(c=>c+1);
-        addPoints(pts,name||scientific,"🌿");
+      const res=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+        body:JSON.stringify({
+          model:"claude-haiku-4-5-20251001",
+          max_tokens:800,
+          messages:[{role:"user",content:[
+            {type:"image",source:{type:"base64",media_type:file.type||"image/jpeg",data:b64}},
+            {type:"text",text:`Analiza esta imagen. Si hay una planta responde SOLO JSON sin markdown: {"type":"plant","name":"nombre español","scientific":"nombre científico","origin":"región","status":"Autóctona|Invasora|Cultivada","points":20,"desc":"descripción 1-2 frases","confidence":"Alta|Media|Baja","family":"familia","observations":"dato observaciones"} Si no hay planta: {"type":"none","message":"No se detectó ninguna planta"}`}
+          ]}]
+        })
+      });
+      const data=await res.json();
+      const text=data.content?.[0]?.text||"";
+      const parsed=JSON.parse(text.replace(/```json|```/g,"").trim());
+      if(parsed.type==="plant"){
+        const care=getPlantCare(parsed.name||parsed.scientific);
+        setPlantResult({...parsed,care});
+        setPlantCount(prev=>({...prev,[parsed.name]:(prev[parsed.name]||0)+1}));
+        setPlantLog(prev=>[{name:parsed.name,scientific:parsed.scientific,emoji:"🌿",date:new Date().toLocaleDateString(),pts:parsed.points},...prev.slice(0,49)]);
+        if(parsed.status==="Invasora") setInvasoraCount(c=>c+1);
+        addPoints(parsed.points,parsed.name,"🌿");
       } else {
-        setPlantResult({type:"none",message:"No se detectó ninguna planta. Intenta con otra foto más clara y con buena luz."});
+        setPlantResult({type:"none",message:parsed.message||"No se detectó ninguna planta."});
       }
     }catch(err){
-      setPlantResult({type:"error",message:"Error de conexión. Verifica tu internet e inténtalo de nuevo."});
+      setPlantResult({type:"error",message:"Error al analizar. Inténtalo de nuevo."});
     }
     setScanning(false);
   };
