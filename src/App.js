@@ -154,14 +154,13 @@ export default function EcoQuest() {
           <div key={i} style={{ position:"absolute", width:3+(i%4)*2, height:3+(i%4)*2, borderRadius:"50%", background:i%3===0?"#4ade80":i%3===1?"#86efac33":"#22d3ee22", left:((i*37+10)%95)+"%", top:((i*53+7)%90)+"%", animation:"float "+(3+i%4)+"s ease-in-out infinite alternate", animationDelay:(i*0.3)+"s" }} />
         ))}
       </div>
-      <style>{
-        "@keyframes float{from{transform:translateY(0)}to{transform:translateY(-12px)}}" +
-        "@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.4)}100%{transform:scale(1)}}" +
-        "@keyframes slideIn{from{transform:translateY(-60px) scale(0.8);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}" +
-        "@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}" +
-        "input[type=file]{position:absolute;width:100%;height:100%;top:0;left:0;opacity:0;cursor:pointer;z-index:10;font-size:0}"
-      }</style>
-
+      <style dangerouslySetInnerHTML={{ __html: `
+  @keyframes float { from { transform: translateY(0); } to { transform: translateY(-12px); } }
+  @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
+  @keyframes slideIn { from { transform: translateY(-60px) scale(0.8); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  input[type=file] { position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0; cursor: pointer; z-index: 10; font-size: 0; }
+` }} />
       {notification && (
         <div style={{ position:"fixed", top:20, left:"50%", transform:"translateX(-50%)", background:"linear-gradient(135deg,#16a34a,#15803d)", color:"white", borderRadius:50, padding:"12px 28px", fontWeight:"bold", fontSize:14, zIndex:1000, boxShadow:"0 8px 32px #4ade8066", animation:"slideIn 0.3s ease", display:"flex", alignItems:"center", gap:10, maxWidth:"88vw", textAlign:"center" }}>
           <span style={{ fontSize:22 }}>{notification.emoji}</span>{notification.msg}
