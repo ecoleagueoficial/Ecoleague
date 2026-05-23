@@ -168,6 +168,7 @@ export default function EcoQuest() {
     try{
       const b64=await toBase64(file);
       const mediaType=file.type||"image/jpeg";
+      console.log("Iniciando análisis",file.name,file.size);
       const proxies=[
         `https://corsproxy.io/?https://api.inaturalist.org/v1/computervision/score_image`,
         `https://api.allorigins.win/raw?url=${encodeURIComponent("https://api.inaturalist.org/v1/computervision/score_image")}`,
