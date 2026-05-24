@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const INAT_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VyX2lkIjoxMDU2NTcwNywiZXhwIjoxNzc5NjY2MzQwfQ.0Q39DkizagFZKsp7gRwXZGLcdzkBkMiSLK7e03Wdi46aainAWuIZLABhabDHs7e5kbHafXSQCE4lKOBPD05RHg";
 
@@ -22,7 +22,6 @@ const RECYCLE_ITEMS = [
   { id: "battery",  label: "Pila",      emoji: "🔋", points: 20, color: "#FF6B6B" },
 ];
 
-// Catálogo ampliado de logros fijos
 const ACHIEVEMENTS = [
   { id: "first_plant",  title: "Primer Brote",      desc: "Identifica tu primera planta",     emoji: "🌱", bonus: 20,  check: (p)       => Object.keys(p).length >= 1 },
   { id: "plants_5",     title: "Explorador Verde",  desc: "Identifica 5 especies distintas",  emoji: "🔭", bonus: 50,  check: (p)       => Object.keys(p).length >= 5 },
@@ -30,19 +29,23 @@ const ACHIEVEMENTS = [
   { id: "plants_25",    title: "Gran Naturalista",  desc: "Identifica 25 especies distintas", emoji: "🌳", bonus: 500, check: (p)       => Object.keys(p).length >= 25 },
   { id: "recycle_5",    title: "Eco-Consciente",    desc: "Recicla 5 objetos en total",       emoji: "♻️", bonus: 30,  check: (p,r)     => Object.values(r).reduce((a,b)=>a+b,0) >= 5 },
   { id: "recycle_25",   title: "Héroe del Contenedor", desc: "Recicla 25 objetos en total",    emoji: "🦸", bonus: 150, check: (p,r)     => Object.values(r).reduce((a,b)=>a+b,0) >= 25 },
-  { id: "recycle_50",   title: "Residuos Cero",     desc: "Recicla 50 objetos en total",       emoji: "🌌", bonus: 350, check: (p,r)     => Object.values(r).reduce((a,b)=>a+b,0) >= 50 },
   { id: "all_recycle",  title: "Reciclador Total",  desc: "Recicla al menos 1 de cada tipo",  emoji: "🏅", bonus: 100, check: (p,r)     => RECYCLE_ITEMS.every(i=>(r[i.id]||0)>=1) },
-  { id: "battery_king", title: "Carga Limpia",      desc: "Recicla 5 pilas contaminantes",    emoji: "⚡", bonus: 80,  check: (p,r)     => (r["battery"]||0) >= 5 },
   { id: "invasora",     title: "Alerta Biológica",  desc: "Encuentra una planta invasora",    emoji: "🚨", bonus: 60,  check: (p,r,inv) => inv > 0 },
 ];
 
-// Retos semanales fijos simulados
 const WEEKLY_CHALLENGES = [
-  { id: "w_1", title: "Operación Vidrio", desc: "Recicla 3 botellas o envases de vidrio esta semana", emoji: "🍾", target: 3, bonus: 40, check: (r) => (r["glass"] || 0) },
-  { id: "w_2", title: "Biodiversidad", desc: "Registra 3 plantas diferentes en tu entorno", emoji: "🌻", target: 3, bonus: 60, check: (p) => Object.keys(p).length },
+  { id: "w_1", title: "Operación Vidrio", desc: "Recicla 3 botellas o envases de vidrio esta semana", emoji: "🍾", target: 3, bonus: 40 },
+  { id: "w_2", title: "Biodiversidad Urb", desc: "Registra 3 plantas diferentes en tu entorno", emoji: "🌻", target: 3, bonus: 60 },
 ];
 
-const STATUS_COLORS = { "Autóctona": "#4CAF50", "Invasora": "#F44336", "Cultivada": "#FF9800" };
+// Datos iniciales fijos de los competidores simulados en la Clasificación Global
+const SIMULATED_LEADERBOARD = [
+  { name: "BioPaula🌱", points: 890, avatar: "🌸", league: "Plata" },
+  { name: "ReciclaPro", points: 720, avatar: "🤖", league: "Plata" },
+  { name: "EcoLucas01", points: 540, avatar: "🦊", league: "Plata" },
+  { name: "NaturaKris", points: 410, avatar: "🦋", league: "Plata" },
+  { name: "PlanetaVerde", points: 280, avatar: "🌳", league: "Plata" },
+];
 
 function load(key, def) {
   try { const v = localStorage.getItem(key); return v !== null ? JSON.parse(v) : def; } catch { return def; }
@@ -59,30 +62,28 @@ function getNextRank(points) {
   return RANKS.find(r => r.min > points) || null;
 }
 
-// Generador Inteligente de Cuidados y Curiosidades Añadidas
+// Determinar el nivel de Liga Competitiva basado en puntos
+function getCompetitionLeague(points) {
+  if (points >= 1200) return { name: "Oro", color: "#fbbf24", bg: "linear-gradient(135deg, #fbbf2422, #b4530911)", border: "#fbbf24cc", badge: "🥇" };
+  if (points >= 350)  return { name: "Plata", color: "#cbd5e1", bg: "linear-gradient(135deg, #cbd5e122, #47556911)", border: "#cbd5e1cc", badge: "🥈" };
+  return { name: "Bronce", color: "#b45309", bg: "linear-gradient(135deg, #b4530922, #78350f11)", border: "#b45309cc", badge: "🥉" };
+}
+
 function generateCareSpecs(commonName, scientificName, wikiExtract, family) {
   const text = (wikiExtract + " " + family + " " + commonName).toLowerCase();
-  
   let leafType = "Perenne (Verde e intacta todo el año)";
-  if (text.includes("caduc") || text.includes("hoja caduca") || text.includes("pierde la hoja")) {
-    leafType = "Caduca (Se cae o debilita en otoño/invierno)";
-  } else if (text.includes("cactus") || text.includes("suculenta") || text.includes("crasa") || text.includes("cactaceae")) {
-    leafType = "Carnosa / Suculenta (Gruesa, almacena su propia agua)";
-  }
+  if (text.includes("caduc") || text.includes("hoja caduca")) leafType = "Caduca (Se cae o debilita en otoño)";
+  else if (text.includes("cactus") || text.includes("suculenta")) leafType = "Carnosa / Suculenta (Almacena su agua)";
 
   let flowering = "Primavera y Verano";
-  if (text.includes("otoño") || text.includes("autumn")) flowering = "Finales de Verano y Otoño";
-  if (text.includes("invierno") || text.includes("winter")) flowering = "Invierno y principios de Primavera";
-  if (text.includes("no tiene flor") || text.includes("helecho")) flowering = "No florece (Se reproduce por esporas)";
+  if (text.includes("otoño")) flowering = "Finales de Verano y Otoño";
+  if (text.includes("no tiene flor") || text.includes("helecho")) flowering = "No florece (Esporas)";
 
-  let watering = "Moderado (1 o 2 veces por semana, dejando secar la superficie)";
-  if (text.includes("cactus") || text.includes("suculenta") || text.includes("desiert") || text.includes("seco")) {
-    watering = "Bajo (Cada 10-15 días, solo si la tierra está totalmente seca)";
-  } else if (text.includes("tropical") || text.includes("humed") || text.includes("pantano") || text.includes("río")) {
-    watering = "Alto (Mantener sustrato siempre húmedo sin encharcar)";
-  }
+  let watering = "Moderado (1 o 2 veces por semana)";
+  if (text.includes("cactus") || text.includes("suculenta") || text.includes("seco")) watering = "Bajo (Cada 10-15 días)";
+  else if (text.includes("tropical") || text.includes("humed")) watering = "Alto (Sustrato húmedo constantemente)";
 
-  let feature = "Planta de gran valor ornamental y equilibrio en ecosistemas locales.";
+  let feature = "Planta de gran valor ornamental y equilibrio ambiental.";
   if (wikiExtract) {
     const sentences = wikiExtract.split(/[.🧱]/);
     if (sentences.length > 1) {
@@ -91,26 +92,19 @@ function generateCareSpecs(commonName, scientificName, wikiExtract, family) {
     }
   }
 
-  // ── SECCIÓN NUEVA: GENERACIÓN DE 2 CURIOSIDADES ──
   let curiosities = [
     "Sus células contienen cloroplastos que realizan la fotosíntesis, liberando oxígeno vital a nuestra atmósfera.",
     "Forma complejas redes invisibles bajo tierra con hongos (micorrizas) para intercambiar nutrientes con sus vecinas."
   ];
-
-  if (text.includes("cactus") || text.includes("suculenta") || text.includes("crasa")) {
+  if (text.includes("cactus") || text.includes("suculenta")) {
     curiosities = [
       "Abre sus estomas únicamente por la noche (metabolismo CAM) para evitar perder agua por evaporación diurna.",
-      "Sus espinas son en realidad hojas evolutivamente modificadas para protegerse y condensar el rocío matutino."
+      "Sus espinas son en realidad hojas evolutivamente modificadas para protegerse y condensar el rocío."
     ];
-  } else if (text.includes("árbol") || text.includes("tree") || text.includes("pino") || text.includes("roble")) {
+  } else if (text.includes("árbol") || text.includes("pino") || text.includes("roble")) {
     curiosities = [
       "Un ejemplar maduro de este tipo puede absorber hasta 22 kg de dióxido de carbono gaseoso al año.",
-      "Los anillos de su tronco no solo marcan su edad, sino también los años de sequía o lluvias intensas que ha sobrevivido."
-    ];
-  } else if (text.includes("flor") || text.includes("abeja") || text.includes("poliniza")) {
-    curiosities = [
-      "Sus colores y patrones geométricos (muchos visibles solo bajo luz ultravioleta) actúan como pistas de aterrizaje para polinizadores.",
-      "Ciertas especies emiten compuestos volátiles específicos para alertar a plantas vecinas si están siendo atacadas por insectos."
+      "Los anillos de su tronco no solo marcan su edad, sino también las condiciones climáticas históricas que sobrevivió."
     ];
   }
 
@@ -125,11 +119,10 @@ async function fetchWikiInfo(scientificName, commonName, family) {
 
   for (const q of queries) {
     try {
-      const searchUrl = `https://es.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`;
-      const res = await fetch(searchUrl);
+      const res = await fetch(`https://es.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`);
       if (!res.ok) continue;
       const data = await res.json();
-      if (data && data.extract && data.extract.length > 30) {
+      if (data?.extract && data.extract.length > 30) {
         rawExtract = data.extract;
         thumbnail = data.thumbnail?.source || null;
         wikiUrl = data.content_urls?.desktop?.page || null;
@@ -137,66 +130,85 @@ async function fetchWikiInfo(scientificName, commonName, family) {
       }
     } catch {}
   }
-
   const careSpecs = generateCareSpecs(commonName, scientificName, rawExtract, family || "");
   return { ...careSpecs, thumbnail, wikiUrl };
 }
 
 export default function EcoQuest() {
   const [tab, setTab] = useState("scan");
+  const [leagueSubTab, setLeagueSubTab] = useState("myLeague"); // 'myLeague' o 'globalRank'
 
   // Perfil del Usuario
-  const [userName,   setUserName]   = useState(() => load("eq_username", "Explorador Verde"));
+  const [userName, setUserName] = useState(() => load("eq_username", "Explorador Verde"));
   const [userAvatar, setUserAvatar] = useState(() => load("eq_avatar", "🌿"));
-  const [userCode]                  = useState(() => load("eq_usercode", "EQ-" + Math.floor(100000 + Math.random() * 900000)));
+  const [userCode] = useState(() => load("eq_usercode", "EQ-" + Math.floor(100000 + Math.random() * 900000)));
 
-  // Sistema de Puntos y Estadísticas
-  const [myPoints,          setMyPoints]          = useState(() => load("eq_points", 0));
-  const [plantCount,        setPlantCount]        = useState(() => load("eq_plants", {}));
-  const [recycleCount,      setRecycleCount]      = useState(() => load("eq_recycle", {}));
-  const [invasoraCount,      setInvasoraCount]     = useState(() => load("eq_invasora", 0));
-  const [unlockedAch,        setUnlockedAch]       = useState(() => load("eq_achievements", []));
+  // Estados Base
+  const [myPoints, setMyPoints] = useState(() => load("eq_points", 0));
+  const [plantCount, setPlantCount] = useState(() => load("eq_plants", {}));
+  const [recycleCount, setRecycleCount] = useState(() => load("eq_recycle", {}));
+  const [invasoraCount, setInvasoraCount] = useState(() => load("eq_invasora", 0));
+  const [unlockedAch, setUnlockedAch] = useState(() => load("eq_achievements", []));
 
-  // Ligas (Novedad)
-  const [myLeagues,          setMyLeagues]         = useState(() => load("eq_leagues", ["Liga Global"]));
-  const [leagueInput,        setLeagueInput]       = useState("");
+  // Ligas y Grupos Privados
+  const [myLeagues, setMyLeagues] = useState(() => load("eq_leagues", ["Liga Vecinal"]));
+  const [leagueInput, setLeagueInput] = useState("");
 
-  // Escáner
-  const [scanning,    setScanning]    = useState(false);
-  const [result,      setResult]      = useState(null);
-  const [previewUrl,  setPreviewUrl]  = useState(null);
+  // Control de Cofres Mecánica Visual Animada
+  const [chestWoodState, setChestWoodState] = useState(() => load("eq_chest_wood", "ready")); // 'ready', 'animating', 'opened'
+  const [chestCrystalState, setChestCrystalState] = useState(() => load("eq_chest_crystal", "ready"));
+
+  // Cuenta atrás simulada (Fin de jornada)
+  const [timeLeft, setTimeLeft] = useState("2d 11h 45m 23s");
+
+  // Escáner e Interfaz
+  const [scanning, setScanning] = useState(false);
+  const [result, setResult] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [loadingInfo, setLoadingInfo] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Estados de edición de perfil
   const [editingProfile, setEditingProfile] = useState(false);
-  const [tempName,       setTempName]       = useState(userName);
-  const [tempAvatar,     setTempAvatar]     = useState(userAvatar);
-  const [notification,   setNotification]   = useState(null);
+  const [tempName, setTempName] = useState(userName);
+  const [tempAvatar, setTempAvatar] = useState(userAvatar);
+  const [notification, setNotification] = useState(null);
 
-  useEffect(() => { save("eq_points",       myPoints);       }, [myPoints]);
-  useEffect(() => { save("eq_plants",       plantCount);    }, [plantCount]);
-  useEffect(() => { save("eq_recycle",      recycleCount);  }, [recycleCount]);
-  useEffect(() => { save("eq_invasora",     invasoraCount); }, [invasoraCount]);
-  useEffect(() => { save("eq_achievements", unlockedAch);   }, [unlockedAch]);
-  useEffect(() => { save("eq_username",      userName);      }, [userName]);
-  useEffect(() => { save("eq_avatar",       userAvatar);    }, [userAvatar]);
-  useEffect(() => { save("eq_usercode",     userCode);      }, [userCode]);
-  useEffect(() => { save("eq_leagues",      myLeagues);     }, [myLeagues]);
+  useEffect(() => { save("eq_points", myPoints); }, [myPoints]);
+  useEffect(() => { save("eq_plants", plantCount); }, [plantCount]);
+  useEffect(() => { save("eq_recycle", recycleCount); }, [recycleCount]);
+  useEffect(() => { save("eq_invasora", invasoraCount); }, [invasoraCount]);
+  useEffect(() => { save("eq_achievements", unlockedAch); }, [unlockedAch]);
+  useEffect(() => { save("eq_username", userName); }, [userName]);
+  useEffect(() => { save("eq_avatar", userAvatar); }, [userAvatar]);
+  useEffect(() => { save("eq_leagues", myLeagues); }, [myLeagues]);
+  useEffect(() => { save("eq_chest_wood", chestWoodState); }, [chestWoodState]);
+  useEffect(() => { save("eq_chest_crystal", chestCrystalState); }, [chestCrystalState]);
 
-  // Detector automático de logros fijos
+  // Actualizador del reloj de fin de liga simulado
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      const hours = 23 - now.getHours();
+      const minutes = 59 - now.getMinutes();
+      const seconds = 59 - now.getSeconds();
+      setTimeLeft(`1d ${hours}h ${minutes}m ${seconds}s`);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Automatismo de logros fijos
   useEffect(() => {
     ACHIEVEMENTS.forEach(ach => {
       if (!unlockedAch.includes(ach.id) && ach.check(plantCount, recycleCount, invasoraCount)) {
         setUnlockedAch(prev => {
           if (prev.includes(ach.id)) return prev;
           setMyPoints(pts => pts + ach.bonus);
-          showNotif(`¡Logro Unlocked: ${ach.title}! (+${ach.bonus} pts)`, ach.emoji);
+          showNotif(`¡Logro Desbloqueado: ${ach.title}! (+${ach.bonus} pts)`, ach.emoji);
           return [...prev, ach.id];
         });
       }
     });
-  }, [plantCount, recycleCount, invasoraCount]);
+  }, [plantCount, recycleCount, invasoraCount, unlockedAch]);
 
   const addPoints = (pts, label, emoji) => {
     setMyPoints(prev => prev + pts);
@@ -224,7 +236,7 @@ export default function EcoQuest() {
         body: formData,
       });
       if (!res.ok) {
-        setResult({ type: "error", message: `Error de servidor iNaturalist (${res.status}).` });
+        setResult({ type: "error", message: `Error del servidor de iNaturalist (${res.status}).` });
         setScanning(false);
         return;
       }
@@ -232,27 +244,24 @@ export default function EcoQuest() {
       const top = data.results?.[0];
 
       if (top?.taxon) {
-        const taxon     = top.taxon;
-        const name      = taxon.preferred_common_name || taxon.name;
-        const scientific= taxon.name;
-        const score     = Math.round((top.combined_score || 0) * 100);
-        const pts       = Math.min(60, Math.max(10, Math.round(score * 0.6)));
-        const isInvasora= taxon.establishment_means?.establishment_means === "introduced";
+        const taxon = top.taxon;
+        const name = taxon.preferred_common_name || taxon.name;
+        const scientific = taxon.name;
+        const score = Math.round((top.combined_score || 0) * 100);
+        const pts = Math.min(60, Math.max(10, Math.round(score * 0.6)));
+        const isInvasora = taxon.establishment_means?.establishment_means === "introduced";
         const familyName = taxon.family_name || null;
 
-        const parsed = {
+        setResult({
           type: "plant", name, scientific,
-          origin:     isInvasora ? "Introducida" : "Nativa",
-          status:     isInvasora ? "Invasora" : "Autóctona",
-          points:     pts,
-          confidence: score > 70 ? "Alta" : score > 40 ? "Media" : "Baja",
-          inatImage:  taxon.default_photo?.medium_url || null,
-          family:     familyName,
+          origin: isInvasora ? "Introducida" : "Nativa",
+          status: isInvasora ? "Invasora" : "Autóctona",
+          points: pts,
+          inatImage: taxon.default_photo?.medium_url || null,
+          family: familyName,
           observations: taxon.observations_count || 0,
-          wikiInfo:   null,
-        };
-
-        setResult(parsed);
+          wikiInfo: null,
+        });
         setScanning(false);
 
         setPlantCount(prev => ({ ...prev, [name]: (prev[name] || 0) + 1 }));
@@ -263,13 +272,12 @@ export default function EcoQuest() {
         const wikiInfo = await fetchWikiInfo(scientific, name, familyName);
         setResult(prev => prev ? { ...prev, wikiInfo } : prev);
         setLoadingInfo(false);
-
       } else {
-        setResult({ type: "none", message: "No se detectó ninguna planta clara en la fotografía." });
+        setResult({ type: "none", message: "No se identificó la planta. Asegura buena iluminación." });
         setScanning(false);
       }
-    } catch (err) {
-      setResult({ type: "error", message: "Error de conexión con la red." });
+    } catch {
+      setResult({ type: "error", message: "Fallo de conexión." });
       setScanning(false);
     }
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -281,36 +289,70 @@ export default function EcoQuest() {
   };
 
   const handleSaveProfile = () => {
-    if(tempName.trim()) setUserName(tempName.trim());
+    if (tempName.trim()) setUserName(tempName.trim());
     setUserAvatar(tempAvatar);
     setEditingProfile(false);
-    showNotif("Perfil guardado correctamente", "👤");
+    showNotif("Perfil actualizado", "👤");
   };
 
   const handleJoinLeague = (e) => {
     e.preventDefault();
-    if(!leagueInput.trim()) return;
+    if (!leagueInput.trim()) return;
     const name = leagueInput.trim();
-    if(myLeagues.includes(name)) {
-      showNotif("Ya estás en esta liga", "⚠️");
+    if (myLeagues.includes(name)) {
+      showNotif("Ya perteneces a este grupo", "⚠️");
     } else {
       setMyLeagues(prev => [...prev, name]);
-      showNotif(`Te has unido a: ${name}`, "🛡️");
+      showNotif(`Te has unido al grupo: ${name}`, "🛡️");
     }
     setLeagueInput("");
   };
 
-  const uniquePlants  = Object.keys(plantCount).length;
+  const copyCodeToClipboard = () => {
+    navigator.clipboard.writeText(userCode);
+    showNotif("¡Código copiado al portapapeles!", "📋");
+  };
+
+  // Apertura animada de cofres
+  const triggerOpenChest = (type) => {
+    if (type === "wood") {
+      if (chestWoodState !== "ready") return;
+      setChestWoodState("animating");
+      setTimeout(() => {
+        setChestWoodState("opened");
+        addPoints(50, "Cofre Ecológico de Madera", "🧰");
+      }, 1200);
+    } else {
+      if (chestCrystalState !== "ready") return;
+      setChestCrystalState("animating");
+      setTimeout(() => {
+        setChestCrystalState("opened");
+        addPoints(150, "Cofre Legendario de Cristal", "💎");
+      }, 1200);
+    }
+  };
+
+  const uniquePlants = Object.keys(plantCount).length;
   const totalRecycled = Object.values(recycleCount).reduce((a, b) => a + b, 0);
-  const currentRank   = getRank(myPoints);
-  const nextRank      = getNextRank(myPoints);
-  const rankProgress  = nextRank ? ((myPoints - currentRank.min) / (nextRank.min - currentRank.min)) * 100 : 100;
+  const currentRank = getRank(myPoints);
+  const nextRank = getNextRank(myPoints);
+  const rankProgress = nextRank ? ((myPoints - currentRank.min) / (nextRank.min - currentRank.min)) * 100 : 100;
+  
+  const compLeague = getCompetitionLeague(myPoints);
+
+  // Ordenar clasificación global sumando dinámicamente al usuario real
+  const combinedLeaderboard = [
+    { name: `${userName} (Tú)`, points: myPoints, avatar: userAvatar, league: compLeague.name, isUser: true },
+    ...SIMULATED_LEADERBOARD
+  ].sort((a, b) => b.points - a.points);
+
+  const userPosition = combinedLeaderboard.findIndex(item => item.isUser) + 1;
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg,#07121e 0%,#091b13 50%,#07121e 100%)", fontFamily: "system-ui, sans-serif", color: "#e8f5e9", position: "relative", paddingBottom: 120 }}>
+    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg,#060f19 0%,#081710 50%,#060f19 100%)", fontFamily: "system-ui, sans-serif", color: "#e8f5e9", paddingBottom: 130 }}>
       
       {notification && (
-        <div style={{ position:"fixed", top:20, left:"50%", transform:"translateX(-50%)", background:"linear-gradient(135deg,#16a34a,#0d9488)", color:"white", borderRadius:50, padding:"12px 24px", fontWeight:"bold", fontSize:14, zIndex:9999, boxShadow:"0 8px 24px rgba(22,163,74,0.4)", animation:"slideIn .3s ease", display:"flex", alignItems:"center", gap:10, maxWidth:"90vw" }}>
+        <div style={{ position:"fixed", top:20, left:"50%", transform:"translateX(-50%)", background:"linear-gradient(135deg,#16a34a,#0d9488)", color:"white", borderRadius:50, padding:"12px 24px", fontWeight:"bold", fontSize:13, zIndex:9999, boxShadow:"0 8px 24px rgba(22,163,74,0.4)", animation:"slideIn .3s ease", display:"flex", alignItems:"center", gap:10, maxWidth:"90vw" }}>
           <span style={{ fontSize:18 }}>{notification.emoji}</span>
           <span>{notification.msg}</span>
         </div>
@@ -318,79 +360,79 @@ export default function EcoQuest() {
 
       <div style={{ maxWidth:480, margin:"0 auto" }}>
         
-        {/* TOP BAR / USER RESUMEN */}
-        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"20px 20px 10px" }}>
+        {/* BANNER DE USUARIO SUPERIOR */}
+        <div style={{ display:"flex", alignItems:"center", justifyValue:"space-between", padding:"20px 20px 10px", justifyContent:"space-between" }}>
           <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-            <span style={{ fontSize:32, background:"rgba(255,255,255,0.08)", borderRadius:"50%", padding:6, width:44, height:44, display:"flex", alignItems:"center", justifyValue:"center" }}>{userAvatar}</span>
+            <span style={{ fontSize:28, background:"rgba(255,255,255,0.06)", borderRadius:"50%", width:44, height:44, display:"flex", alignItems:"center", justifyContent:"center" }}>{userAvatar}</span>
             <div>
               <div style={{ fontSize:14, fontWeight:"bold", color:"#fff" }}>{userName}</div>
-              <div style={{ fontSize:11, color:currentRank.color, fontWeight:"600" }}>{currentRank.emoji} Rango {currentRank.name}</div>
+              <div style={{ fontSize:11, color:currentRank.color, fontWeight:"600" }}>{currentRank.emoji} {currentRank.name}</div>
             </div>
           </div>
-          <div style={{ background:"rgba(251,191,36,0.12)", border:"1px solid rgba(251,191,36,0.3)", borderRadius:12, padding:"6px 12px", textAlign:"right" }}>
-            <div style={{ fontSize:10, color:"#fbbf24", fontWeight:"bold" }}>PUNTOS TOTALES</div>
-            <div style={{ fontSize:16, fontWeight:"900", color:"#fbbf24" }}>⭐ {myPoints}</div>
+          <div style={{ background:"rgba(251,191,36,0.08)", border:"1px solid rgba(251,191,36,0.25)", borderRadius:12, padding:"6px 12px" }}>
+            <div style={{ fontSize:9, color:"#fbbf24", fontWeight:"bold", textAlign:"center" }}>PUNTOS</div>
+            <div style={{ fontSize:15, fontWeight:"900", color:"#fbbf24", textAlign:"center" }}>⭐ {myPoints}</div>
           </div>
         </div>
 
-        {/* LOGO DE LA APP */}
-        <div style={{ textAlign:"center", padding:"10px 0 20px" }}>
-          <div style={{ fontSize:32, fontWeight:"900", letterSpacing:-1, background:"linear-gradient(135deg,#4ade80,#22d3ee)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>🌿 EcoQuest</div>
+        {/* LOGOTIPO GENERAL */}
+        <div style={{ textAlign:"center", padding:"10px 0 15px" }}>
+          <div style={{ fontSize:30, fontWeight:"900", background:"linear-gradient(135deg,#4ade80,#22d3ee)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>🌿 EcoQuest</div>
         </div>
 
-        {/* ════════════════ TAB CONTENIDOS ════════════════ */}
+        {/* ════════════════ CONTROLADORES DE PESTAÑAS ════════════════ */}
         
-        {/* 1. COMPONENTE SCAN (PLANTAS) */}
-        {tab==="scan" && (
+        {/* PESTAÑA 1: ESCÁNER DE PLANTAS */}
+        {tab === "scan" && (
           <div style={{ padding:"0 20px", animation:"fadeUp .3s ease" }}>
-            <div onClick={() => fileInputRef.current?.click()} style={{ background:"rgba(255,255,255,0.02)", borderRadius:24, padding:30, border:"2px dashed rgba(74,222,128,0.25)", textAlign:"center", marginBottom:20, cursor:"pointer" }}>
+            <div onClick={() => fileInputRef.current?.click()} style={{ background:"rgba(255,255,255,0.01)", borderRadius:24, padding:32, border:"2px dashed rgba(74,222,128,0.2)", textAlign:"center", marginBottom:20, cursor:"pointer" }}>
               <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handlePhotoUpload} style={{ display:"none" }} />
               {scanning ? (
                 <>
-                  <div style={{ fontSize:40, animation:"spin 1.5s linear infinite", display:"inline-block" }}>🧬</div>
-                  <div style={{ marginTop:12, color:"#4ade80", fontSize:14, fontWeight:"600" }}>Analizando taxonomía vegetal...</div>
+                  <div style={{ fontSize:36, animation:"spin 1.2s linear infinite", display:"inline-block" }}>🧬</div>
+                  <div style={{ marginTop:10, color:"#4ade80", fontSize:13, fontWeight:"600" }}>Analizando fotografía botánica...</div>
                 </>
               ) : (
                 <>
-                  <div style={{ fontSize:48 }}>📸</div>
-                  <div style={{ fontSize:15, fontWeight:"bold", color:"#4ade80", marginTop:10 }}>Fotografiar Planta / Árbol</div>
-                  <div style={{ fontSize:11, color:"#86efac55", marginTop:4 }}>Identificación asistida por iNaturalist</div>
+                  <div style={{ fontSize:44 }}>📸</div>
+                  <div style={{ fontSize:14, fontWeight:"bold", color:"#4ade80", marginTop:8 }}>Escanear Planta u Hongo</div>
+                  <div style={{ fontSize:11, color:"#86efac44", marginTop:2 }}>Reconocimiento inteligente vía iNaturalist</div>
                 </>
               )}
             </div>
 
-            {result?.type==="plant" && (
-              <div style={{ background:"rgba(255,255,255,0.03)", borderRadius:20, padding:20, border:"1px solid rgba(255,255,255,0.06)", marginBottom:20 }}>
-                <div style={{ display:"flex", gap:14, marginBottom:16 }}>
+            {result?.type === "plant" && (
+              <div style={{ background:"rgba(255,255,255,0.02)", borderRadius:20, padding:18, border:"1px solid rgba(255,255,255,0.06)", marginBottom:20 }}>
+                <div style={{ display:"flex", gap:12, marginBottom:14 }}>
                   {result.inatImage ? (
-                    <img src={result.inatImage} alt="" style={{ width:60, height:60, borderRadius:12, objectFit:"cover" }} />
-                  ) : <div style={{ fontSize:40 }}>🌱</div>}
+                    <img src={result.inatImage} alt="" style={{ width:56, height:56, borderRadius:10, objectFit:"cover" }} />
+                  ) : <div style={{ fontSize:36 }}>🌱</div>}
                   <div>
-                    <div style={{ fontSize:18, fontWeight:"800", color:"#fff" }}>{result.name}</div>
-                    <div style={{ fontSize:12, color:"#86efac77", fontStyle:"italic" }}>{result.scientific}</div>
-                    <div style={{ marginTop:4 }}><span style={{ background:"rgba(74,222,128,0.15)", color:"#4ade80", fontSize:10, padding:"2px 8px", borderRadius:50, fontWeight:"bold" }}>{result.status}</span></div>
+                    <div style={{ fontSize:16, fontWeight:"800", color:"#fff" }}>{result.name}</div>
+                    <div style={{ fontSize:11, color:"#86efac66", fontStyle:"italic" }}>{result.scientific}</div>
+                    <div style={{ marginTop:4 }}><span style={{ background:"rgba(74,222,128,0.12)", color:"#4ade80", fontSize:9, padding:"2px 8px", borderRadius:50, fontWeight:"bold" }}>{result.status}</span></div>
                   </div>
                 </div>
 
                 {loadingInfo ? (
-                  <div style={{ fontSize:12, color:"#86efac66", textAlign:"center", padding:10 }}>Buscando especificaciones y curiosidades...</div>
+                  <div style={{ fontSize:11, color:"#86efac44", textAlign:"center", padding:8 }}>Generando curiosidades y datos...</div>
                 ) : result.wikiInfo ? (
                   <div>
-                    <div style={{ fontSize:12, color:"#4ade80", fontWeight:"bold", marginBottom:8, letterSpacing:0.5 }}>📋 FICHA DE CUIDADOS</div>
-                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:14 }}>
+                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:12 }}>
                       <div style={{ background:"rgba(255,255,255,0.02)", padding:8, borderRadius:8, fontSize:11 }}>
-                        <span style={{ color:"#86efac", display:"block", fontWeight:"bold", fontSize:9 }}>RIEGO</span> {result.wikiInfo.watering.split("(")[0]}
+                        <span style={{ color:"#86efac", display:"block", fontWeight:"bold", fontSize:9 }}>RIEGO</span>
+                        {result.wikiInfo.watering.split("(")[0]}
                       </div>
                       <div style={{ background:"rgba(255,255,255,0.02)", padding:8, borderRadius:8, fontSize:11 }}>
-                        <span style={{ color:"#a78bfa", display:"block", fontWeight:"bold", fontSize:9 }}>FLORACIÓN</span> {result.wikiInfo.flowering}
+                        <span style={{ color:"#a78bfa", display:"block", fontWeight:"bold", fontSize:9 }}>FLORACIÓN</span>
+                        {result.wikiInfo.flowering}
                       </div>
                     </div>
 
-                    {/* ── APARTADO SOLICITADO: CURIOSIDADES ── */}
-                    <div style={{ background:"linear-gradient(135deg,rgba(34,211,238,0.08),rgba(74,222,128,0.04))", padding:"12px 14px", borderRadius:14, border:"1px solid rgba(34,211,238,0.2)", marginBottom:10 }}>
-                      <div style={{ fontSize:12, color:"#22d3ee", fontWeight:"bold", marginBottom:6, display:"flex", alignItems:"center", gap:4 }}>💡 CURIOSIDADES BOTÁNICAS</div>
-                      {result.wikiInfo.curiosities.map((cur, idx) => (
-                        <div key={idx} style={{ fontSize:12, lineHeight:1.4, color:"#e8f5e9", marginBottom:idx===0?6:0, paddingLeft:10, position:"relative" }}>
+                    <div style={{ background:"linear-gradient(135deg,rgba(34,211,238,0.06),rgba(74,222,128,0.02))", padding:12, borderRadius:12, border:"1px solid rgba(34,211,238,0.15)" }}>
+                      <div style={{ fontSize:11, color:"#22d3ee", fontWeight:"bold", marginBottom:6 }}>💡 CURIOSIDADES ASOMBROSAS</div>
+                      {result.wikiInfo.curiosities.map((cur, i) => (
+                        <div key={i} style={{ fontSize:11, lineHeight:1.4, color:"#d1e7dd", marginBottom:i===0?6:0, paddingLeft:8, position:"relative" }}>
                           <span style={{ position:"absolute", left:0, color:"#22d3ee" }}>•</span> {cur}
                         </div>
                       ))}
@@ -402,10 +444,10 @@ export default function EcoQuest() {
 
             {uniquePlants > 0 && (
               <div>
-                <div style={{ fontSize:11, color:"#86efac55", fontWeight:"bold", marginBottom:8 }}>COLECCIÓN DE ESPECIES ESCANEADAS ({uniquePlants})</div>
+                <div style={{ fontSize:11, color:"#86efac44", fontWeight:"bold", marginBottom:6 }}>COLECCIÓN DE ESPECIES ({uniquePlants})</div>
                 <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
                   {Object.entries(plantCount).map(([name, qty]) => (
-                    <span key={name} style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:50, padding:"4px 12px", fontSize:12, color:"#fff" }}>
+                    <span key={name} style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.05)", borderRadius:50, padding:"4px 10px", fontSize:11, color:"#fff" }}>
                       🌿 {name} <b style={{ color:"#4ade80" }}>x{qty}</b>
                     </span>
                   ))}
@@ -415,19 +457,19 @@ export default function EcoQuest() {
           </div>
         )}
 
-        {/* 2. COMPONENTE RECICLAJE */}
-        {tab==="recycle" && (
+        {/* PESTAÑA 2: SECCIÓN RECICLAJE */}
+        {tab === "recycle" && (
           <div style={{ padding:"0 20px", animation:"fadeUp .3s ease" }}>
-            <div style={{ fontSize:11, color:"#86efac55", fontWeight:"bold", marginBottom:12 }}>REGISTRA TUS ACCIONES DE RECICLAJE</div>
+            <div style={{ fontSize:11, color:"#86efac44", fontWeight:"bold", marginBottom:10 }}>SELECCIONA TU ACCIÓN ECO</div>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
               {RECYCLE_ITEMS.map(item => (
-                <div key={item.id} onClick={() => handleRecycle(item)} style={{ background:"rgba(255,255,255,0.03)", border:`1px solid ${item.color}33`, borderRadius:16, padding:16, textAlign:"center", cursor:"pointer", transition:"transform 0.2s" }}>
-                  <div style={{ fontSize:32 }}>{item.emoji}</div>
-                  <div style={{ fontSize:13, fontWeight:"bold", color:item.color, marginTop:4 }}>{item.label}</div>
-                  <div style={{ fontSize:11, color:"#86efac55" }}>+{item.points} pts</div>
+                <div key={item.id} onClick={() => handleRecycle(item)} style={{ background:"rgba(255,255,255,0.02)", border:`1px solid ${item.color}22`, borderRadius:16, padding:14, textAlign:"center", cursor:"pointer" }}>
+                  <div style={{ fontSize:28 }}>{item.emoji}</div>
+                  <div style={{ fontSize:12, fontWeight:"bold", color:item.color, marginTop:2 }}>{item.label}</div>
+                  <div style={{ fontSize:10, color:"#86efac44" }}>+{item.points} pts</div>
                   {recycleCount[item.id] > 0 && (
-                    <div style={{ marginTop:6, background:`${item.color}22`, color:item.color, fontSize:11, fontWeight:"bold", padding:"2px 8px", borderRadius:50, display:"inline-block" }}>
-                      Procesados: {recycleCount[item.id]}
+                    <div style={{ marginTop:4, background:`${item.color}15`, color:item.color, fontSize:10, fontWeight:"bold", padding:"1px 6px", borderRadius:50, display:"inline-block" }}>
+                      Aportados: {recycleCount[item.id]}
                     </div>
                   )}
                 </div>
@@ -436,173 +478,267 @@ export default function EcoQuest() {
           </div>
         )}
 
-        {/* 3. COMPONENTE LOGROS Y RETOS SEMANALES */}
-        {tab==="achievements" && (
+        {/* PESTAÑA 3: LOGROS Y RETOS SEMANALES */}
+        {tab === "achievements" && (
           <div style={{ padding:"0 20px", animation:"fadeUp .3s ease" }}>
-            
-            {/* RETOS SEMANALES */}
-            <div style={{ marginBottom:22 }}>
-              <div style={{ fontSize:12, color:"#22d3ee", fontWeight:"bold", marginBottom:10, letterSpacing:1 }}>📅 RETOS DE LA SEMANA</div>
-              <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+            <div style={{ marginBottom:18 }}>
+              <div style={{ fontSize:11, color:"#22d3ee", fontWeight:"bold", marginBottom:8, letterSpacing:0.5 }}>📅 RETOS ACTUALES SEMANALES</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                 {WEEKLY_CHALLENGES.map(w => {
                   const currentProgress = w.id === "w_1" ? (recycleCount["glass"] || 0) : uniquePlants;
                   const isDone = currentProgress >= w.target;
                   return (
-                    <div key={w.id} style={{ background:"linear-gradient(135deg,rgba(34,211,238,0.08),transparent)", border:"1px solid rgba(34,211,238,0.15)", borderRadius:16, padding:14, display:"flex", alignItems:"center", gap:12 }}>
-                      <span style={{ fontSize:28 }}>{w.emoji}</span>
+                    <div key={w.id} style={{ background:"linear-gradient(135deg,rgba(34,211,238,0.06),transparent)", border:"1px solid rgba(34,211,238,0.12)", borderRadius:14, padding:12, display:"flex", alignItems:"center", gap:10 }}>
+                      <span style={{ fontSize:24 }}>{w.emoji}</span>
                       <div style={{ flex:1 }}>
-                        <div style={{ fontSize:13, fontWeight:"bold", color:"#fff" }}>{w.title}</div>
-                        <div style={{ fontSize:11, color:"#86efac77", marginTop:2 }}>{w.desc}</div>
-                        <div style={{ height:4, background:"rgba(255,255,255,0.1)", borderRadius:2, marginTop:6 }}>
+                        <div style={{ fontSize:12, fontWeight:"bold", color:"#fff" }}>{w.title}</div>
+                        <div style={{ fontSize:10, color:"#86efac55", marginTop:1 }}>{w.desc}</div>
+                        <div style={{ height:3, background:"rgba(255,255,255,0.08)", borderRadius:2, marginTop:4 }}>
                           <div style={{ height:"100%", background:"#22d3ee", borderRadius:2, width:`${Math.min((currentProgress/w.target)*100, 100)}%` }} />
                         </div>
-                        <div style={{ fontSize:10, color:"#22d3ee", marginTop:4 }}>Progreso: {currentProgress}/{w.target}</div>
                       </div>
-                      <div style={{ textAlign:"center" }}>
-                        <span style={{ display:"block", fontSize:11, fontWeight:"bold", color:isDone?"#4ade80":"#fbbf24" }}>{isDone?"¡Hecho!":`+${w.bonus}`}</span>
-                        {!isDone && <span style={{ fontSize:9, color:"#fbbf24" }}>PTS</span>}
-                      </div>
+                      <span style={{ fontSize:11, fontWeight:"bold", color:isDone?"#4ade80":"#fbbf24" }}>{isDone?"Listo":`+${w.bonus}p`}</span>
                     </div>
                   );
                 })}
               </div>
             </div>
 
-            {/* LOGROS PERMANENTES */}
             <div>
-              <div style={{ fontSize:12, color:"#a78bfa", fontWeight:"bold", marginBottom:10, letterSpacing:1 }}>🏆 MEDALLAS Y LOGROS PERMANENTES</div>
-              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+              <div style={{ fontSize:11, color:"#a78bfa", fontWeight:"bold", marginBottom:8, letterSpacing:0.5 }}>🏆 HISTORIAL DE LOGROS</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
                 {ACHIEVEMENTS.map(ach => {
                   const unlocked = unlockedAch.includes(ach.id);
                   return (
-                    <div key={ach.id} style={{ background:unlocked?"rgba(167,139,250,0.06)":"rgba(255,255,255,0.01)", border:unlocked?"1px solid rgba(167,139,250,0.3)":"1px solid rgba(255,255,255,0.04)", borderRadius:14, padding:12, display:"flex", alignItems:"center", gap:12, opacity:unlocked ? 1 : 0.5 }}>
-                      <span style={{ fontSize:24, filter:unlocked?"none":"grayscale(100%)" }}>{ach.emoji}</span>
+                    <div key={ach.id} style={{ background:unlocked?"rgba(167,139,250,0.04)":"rgba(255,255,255,0.01)", border:unlocked?"1px solid rgba(167,139,250,0.2)":"1px solid rgba(255,255,255,0.02)", borderRadius:12, padding:10, display:"flex", alignItems:"center", gap:10, opacity:unlocked?1:0.4 }}>
+                      <span style={{ fontSize:20 }}>{ach.emoji}</span>
                       <div style={{ flex:1 }}>
-                        <div style={{ fontSize:13, fontWeight:"bold", color:unlocked?"#fff":"#86efac55" }}>{ach.title}</div>
-                        <div style={{ fontSize:11, color:"#86efac55" }}>{ach.desc}</div>
+                        <div style={{ fontSize:12, fontWeight:"bold", color:"#fff" }}>{ach.title}</div>
+                        <div style={{ fontSize:10, color:"#86efac44" }}>{ach.desc}</div>
                       </div>
-                      <span style={{ fontSize:11, fontWeight:"bold", color:"#a78bfa" }}>{unlocked ? "🔒 Desbloqueado" : `+${ach.bonus} pts`}</span>
+                      <span style={{ fontSize:10, color:"#a78bfa", fontWeight:"bold" }}>{unlocked?"🔓 Activado":`+${ach.bonus}`}</span>
                     </div>
                   );
                 })}
               </div>
             </div>
-
           </div>
         )}
 
-        {/* 4. COMPONENTE PERFIL Y LISTA DE RANGOS */}
-        {tab==="profile" && (
+        {/* PESTAÑA 4: PERFIL DE USUARIO Y RANGOS */}
+        {tab === "profile" && (
           <div style={{ padding:"0 20px", animation:"fadeUp .3s ease" }}>
-            
-            {/* FICHA EDITABLE DE PERFIL */}
-            <div style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.05)", borderRadius:20, padding:20, marginBottom:20 }}>
+            <div style={{ background:"rgba(255,255,255,0.01)", border:"1px solid rgba(255,255,255,0.04)", borderRadius:20, padding:18, marginBottom:16 }}>
               {editingProfile ? (
                 <div>
-                  <div style={{ fontSize:12, color:"#4ade80", fontWeight:"bold", marginBottom:6 }}>EDITAR NOMBRE:</div>
-                  <input type="text" value={tempName} onChange={e=>setTempName(e.target.value)} style={{ width:"100%", background:"rgba(0,0,0,0.3)", border:"1px solid #4ade80", borderRadius:10, padding:"8px 12px", color:"#fff", fontSize:14, outline:"none", marginBottom:14 }} />
+                  <div style={{ fontSize:11, color:"#4ade80", fontWeight:"bold", marginBottom:4 }}>APODO DE EXPLORADOR:</div>
+                  <input type="text" value={tempName} onChange={e=>setTempName(e.target.value)} style={{ width:"100%", background:"rgba(0,0,0,0.3)", border:"1px solid #4ade80", borderRadius:10, padding:"8px 12px", color:"#fff", fontSize:13, outline:"none", marginBottom:12 }} />
                   
-                  <div style={{ fontSize:12, color:"#4ade80", fontWeight:"bold", marginBottom:6 }}>SELECCIONAR AVATAR ECOLÓGICO:</div>
-                  <div style={{ display:"grid", gridTemplateColumns:"repeat(6, 1fr)", gap:6, marginBottom:16 }}>
+                  <div style={{ fontSize:11, color:"#4ade80", fontWeight:"bold", marginBottom:4 }}>AVATAR DE LA NATURALEZA:</div>
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(6, 1fr)", gap:6, marginBottom:14 }}>
                     {AVATAR_OPTIONS.map(av => (
-                      <span key={av} onClick={()=>setTempAvatar(av)} style={{ fontSize:22, padding:6, textAlign:"center", borderRadius:8, background:tempAvatar===av?"#16a34a":"rgba(255,255,255,0.03)", cursor:"pointer" }}>{av}</span>
+                      <span key={av} onClick={()=>setTempAvatar(av)} style={{ fontSize:20, padding:4, textAlign:"center", borderRadius:8, background:tempAvatar===av?"#16a34a":"rgba(255,255,255,0.02)", cursor:"pointer" }}>{av}</span>
                     ))}
                   </div>
-
-                  <div style={{ display:"flex", gap:8 }}>
-                    <button onClick={handleSaveProfile} style={{ flex:1, background:"linear-gradient(135deg,#16a34a,#0d9488)", border:"none", color:"#fff", padding:"8px 0", borderRadius:10, fontWeight:"bold", cursor:"pointer" }}>Guardar</button>
-                    <button onClick={()=>{setEditingProfile(false); setTempName(userName); setTempAvatar(userAvatar);}} style={{ background:"rgba(255,255,255,0.1)", border:"none", color:"#fff", padding:"8px 14px", borderRadius:10, cursor:"pointer" }}>Cancelar</button>
+                  <div style={{ display:"flex", gap:6 }}>
+                    <button onClick={handleSaveProfile} style={{ flex:1, background:"linear-gradient(135deg,#16a34a,#0d9488)", border:"none", color:"#fff", padding:"8px 0", borderRadius:8, fontWeight:"bold", cursor:"pointer", fontSize:12 }}>Guardar</button>
+                    <button onClick={()=>{setEditingProfile(false);}} style={{ background:"rgba(255,255,255,0.08)", border:"none", color:"#fff", padding:"0 12px", borderRadius:8, cursor:"pointer", fontSize:12 }}>Cerrar</button>
                   </div>
                 </div>
               ) : (
                 <div style={{ textAlign:"center" }}>
-                  <span style={{ fontSize:44, display:"inline-block", background:"rgba(255,255,255,0.05)", borderRadius:"50%", padding:12, marginBottom:10 }}>{userAvatar}</span>
-                  <div style={{ fontSize:18, fontWeight:"bold", color:"#fff" }}>{userName}</div>
-                  <div style={{ fontSize:11, color:"#86efac55", marginTop:2 }}>ID de Jugador: {userCode}</div>
-                  <button onClick={()=>{setEditingProfile(true); setTempName(userName); setTempAvatar(userAvatar);}} style={{ marginTop:12, background:"rgba(74,222,128,0.1)", border:"1px solid rgba(74,222,128,0.3)", color:"#4ade80", padding:"4px 14px", borderRadius:8, fontSize:12, fontWeight:"bold", cursor:"pointer" }}>✏️ Editar Perfil</button>
+                  <span style={{ fontSize:38, display:"inline-block", background:"rgba(255,255,255,0.04)", borderRadius:"50%", padding:10, marginBottom:6 }}>{userAvatar}</span>
+                  <div style={{ fontSize:16, fontWeight:"bold", color:"#fff" }}>{userName}</div>
+                  <button onClick={()=>{setEditingProfile(true); setTempName(userName); setTempAvatar(userAvatar);}} style={{ marginTop:8, background:"rgba(74,222,128,0.08)", border:"1px solid rgba(74,222,128,0.2)", color:"#4ade80", padding:"4px 12px", borderRadius:6, fontSize:11, fontWeight:"bold", cursor:"pointer" }}>⚙️ Configurar Perfil</button>
                 </div>
               )}
             </div>
 
-            {/* ESCALAFÓN COMPLETO DE RANGOS */}
             <div>
-              <div style={{ fontSize:12, color:"#fbbf24", fontWeight:"bold", marginBottom:10, letterSpacing:0.5 }}>📈 RANGOS DISPONIBLES EN ECOQUEST</div>
-              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+              <div style={{ fontSize:11, color:"#fbbf24", fontWeight:"bold", marginBottom:8 }}>📈 ESCALAFÓN HISTÓRICO DE RANGOS</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
                 {RANKS.map(r => {
                   const isCurrent = currentRank.name === r.name;
                   return (
-                    <div key={r.name} style={{ background:isCurrent ? `${r.color}15` : "rgba(255,255,255,0.01)", border:isCurrent ? `1px solid ${r.color}` : "1px solid rgba(255,255,255,0.04)", borderRadius:14, padding:12, display:"flex", alignItems:"center", gap:12 }}>
-                      <span style={{ fontSize:24 }}>{r.emoji}</span>
+                    <div key={r.name} style={{ background:isCurrent?`${r.color}10`:"rgba(255,255,255,0.01)", border:isCurrent?`1px solid ${r.color}`:"1px solid rgba(255,255,255,0.02)", borderRadius:12, padding:10, display:"flex", alignItems:"center", gap:10 }}>
+                      <span style={{ fontSize:20 }}>{r.emoji}</span>
                       <div style={{ flex:1 }}>
-                        <div style={{ fontSize:13, fontWeight:"bold", color:isCurrent?"#fff":r.color, display:"flex", alignItems:"center", gap:6 }}>
-                          {r.name} {isCurrent && <span style={{ background:"#fbbf24", color:"#000", fontSize:9, padding:"1px 6px", borderRadius:4, fontWeight:"bold" }}>ACTUAL</span>}
-                        </div>
-                        <div style={{ fontSize:11, color:"#86efac55", marginTop:1 }}>{r.desc}</div>
+                        <div style={{ fontSize:12, fontWeight:"bold", color:isCurrent?"#fff":r.color }}>{r.name} {isCurrent && "📍"}</div>
+                        <div style={{ fontSize:10, color:"#86efac44" }}>{r.desc}</div>
                       </div>
-                      <div style={{ fontSize:11, fontWeight:"bold", color:"#fff", minWidth:60, textAlign:"right" }}>{r.min} pts</div>
+                      <span style={{ fontSize:11, color:"#fff", fontWeight:"600" }}>{r.min} pts</span>
                     </div>
                   );
                 })}
               </div>
             </div>
-
           </div>
         )}
 
-        {/* 5. NUEVA PESTAÑA: LIGAS COMPETITIVAS */}
+        {/* ════════════════ TAB NUEVA REESTRUCTURADA: LIGAS COMPETITIVAS ════════════════ */}
         {tab === "leagues" && (
           <div style={{ padding:"0 20px", animation:"fadeUp .3s ease" }}>
             
-            {/* CÓDIGO PERSONAL */}
-            <div style={{ background:"linear-gradient(135deg,rgba(241,191,36,0.1),transparent)", border:"1px solid rgba(251,191,36,0.2)", borderRadius:16, padding:16, marginBottom:16, textAlign:"center" }}>
-              <div style={{ fontSize:11, color:"#fbbf24", fontWeight:"bold", letterSpacing:0.5 }}>TU CÓDIGO DE INVITACIÓN PERSONAL</div>
-              <div style={{ fontSize:22, fontWeight:"900", color:"#fff", letterSpacing:2, margin:"4px 0" }}>{userCode}</div>
-              <div style={{ fontSize:10, color:"#86efac55" }}>Compártelo con tus amigos para que se unan a tus clasificaciones.</div>
+            {/* SUB-NAVEGACIÓN INTERNA DE LA SECCIÓN */}
+            <div style={{ display:"flex", background:"rgba(0,0,0,0.25)", padding:3, borderRadius:12, gap:4, marginBottom:16 }}>
+              <button onClick={() => setLeagueSubTab("myLeague")} style={{ flex:1, padding:"8px 0", border:"none", borderRadius:10, fontSize:11, fontWeight:"bold", cursor:"pointer", background:leagueSubTab==="myLeague"?"linear-gradient(135deg,#16a34a,#0d9488)":"transparent", color:leagueSubTab==="myLeague"?"#fff":"#86efac44" }}>
+                🛡️ Mi División y Alianzas
+              </button>
+              <button onClick={() => setLeagueSubTab("globalRank")} style={{ flex:1, padding:"8px 0", border:"none", borderRadius:10, fontSize:11, fontWeight:"bold", cursor:"pointer", background:leagueSubTab==="globalRank"?"linear-gradient(135deg,#16a34a,#0d9488)":"transparent", color:leagueSubTab==="globalRank"?"#fff":"#86efac44" }}>
+                🌍 Clasificación Global
+              </button>
             </div>
 
-            {/* FORMULARIO UNIRSE O CREAR */}
-            <div style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.05)", borderRadius:18, padding:16, marginBottom:20 }}>
-              <form onSubmit={handleJoinLeague}>
-                <div style={{ fontSize:12, color:"#4ade80", fontWeight:"bold", marginBottom:6 }}>CREAR O UNIRSE A UNA LIGA:</div>
-                <div style={{ display:"flex", gap:8 }}>
-                  <input type="text" placeholder="Introduce el nombre o código..." value={leagueInput} onChange={e=>setLeagueInput(e.target.value)} style={{ flex:1, background:"rgba(0,0,0,0.2)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:10, padding:"8px 12px", color:"#fff", fontSize:13, outline:"none" }} />
-                  <button type="submit" style={{ background:"linear-gradient(135deg,#16a34a,#0d9488)", border:"none", color:"#fff", padding:"0 16px", borderRadius:10, fontWeight:"bold", fontSize:12, cursor:"pointer" }}>Entrar</button>
-                </div>
-              </form>
-            </div>
-
-            {/* MIS LIGAS ACTIVAS */}
-            <div>
-              <div style={{ fontSize:12, color:"#4ade80", fontWeight:"bold", marginBottom:8 }}>MIS LIGAS ACTIVAS</div>
-              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-                {myLeagues.map((league, idx) => (
-                  <div key={idx} style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.05)", borderRadius:14, padding:14, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                      <span style={{ fontSize:20 }}>🛡️</span>
-                      <span style={{ fontSize:14, fontWeight:"bold", color:"#fff" }}>{league}</span>
+            {/* SUB-TAB 1: LIGA ACTUAL, COFRES Y GRUPOS */}
+            {leagueSubTab === "myLeague" && (
+              <div>
+                {/* TARJETA DINÁMICA DE COMPETICIÓN */}
+                <div style={{ background:compLeague.bg, border:`1px solid ${compLeague.border}`, borderRadius:18, padding:16, marginBottom:16, position:"relative", overflow:"hidden" }}>
+                  <div style={{ display:"flex", justifyValue:"space-between", alignItems:"center", justifyContent:"space-between" }}>
+                    <div>
+                      <div style={{ fontSize:10, color:compLeague.color, fontWeight:"bold", letterSpacing:1 }}>COMPETICIÓN ACTIVA</div>
+                      <div style={{ fontSize:20, fontWeight:"900", color:"#fff", marginTop:2 }}>Liga de {compLeague.name} {compLeague.badge}</div>
                     </div>
-                    <span style={{ fontSize:11, color:"#4ade80", background:"rgba(74,222,128,0.1)", padding:"2px 8px", borderRadius:4, fontWeight:"bold" }}>Tu Posición: #1</span>
+                    <div style={{ textAlign:"right" }}>
+                      <div style={{ fontSize:10, color:"#86efac44" }}>CIERRE DE JORNADA</div>
+                      <div style={{ fontSize:12, fontWeight:"bold", color:"#f87171", fontFamily:"monospace", marginTop:2 }}>⏱️ {timeLeft}</div>
+                    </div>
                   </div>
-                ))}
+                  <div style={{ marginTop:10, fontSize:11, color:"#e8f5e9" }}>
+                    Estás en la posición <b style={{ color:compLeague.color }}>#{userPosition}</b>. ¡Mantente en el Top para asegurar recompensas de temporada!
+                  </div>
+                </div>
+
+                {/* MECÁNICA DE COFRES ANIMADOS CON EFECTO DE VIBRACIÓN */}
+                <div style={{ marginBottom:18 }}>
+                  <div style={{ fontSize:11, color:"#22d3ee", fontWeight:"bold", marginBottom:8 }}>🎁 ALMACÉN DE COFRES DE RECOMPENSA</div>
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+                    
+                    {/* COFRE DE MADERA */}
+                    <div onClick={() => triggerOpenChest("wood")} style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.05)", borderRadius:16, padding:14, textAlign:"center", cursor:chestWoodState==="ready"?"pointer":"default" }}>
+                      <div className={chestWoodState === "animating" ? "shake-effect" : ""} style={{ fontSize:36, transition:"transform 0.3s" }}>
+                        {chestWoodState === "opened" ? "🔓✨" : "🧰"}
+                      </div>
+                      <div style={{ fontSize:12, fontWeight:"bold", marginTop:4, color:"#a78bfa" }}>Cofre de Madera</div>
+                      <button style={{ border:"none", background:chestWoodState==="ready"?"#16a34a":"rgba(255,255,255,0.05)", color:"#fff", borderRadius:6, padding:"4px 10px", fontSize:10, marginTop:6, fontWeight:"bold" }}>
+                        {chestWoodState === "ready" && "RECLAMAR (+50p)"}
+                        {chestWoodState === "animating" && "ABRIENDO..."}
+                        {chestWoodState === "opened" && "PROCESADO"}
+                      </button>
+                    </div>
+
+                    {/* COFRE DE CRISTAL */}
+                    <div onClick={() => triggerOpenChest("crystal")} style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.05)", borderRadius:16, padding:14, textAlign:"center", cursor:chestCrystalState==="ready"?"pointer":"default" }}>
+                      <div className={chestCrystalState === "animating" ? "shake-effect" : ""} style={{ fontSize:36, transition:"transform 0.3s" }}>
+                        {chestCrystalState === "opened" ? "🔓💎" : "📦"}
+                      </div>
+                      <div style={{ fontSize:12, fontWeight:"bold", marginTop:4, color:"#22d3ee" }}>Cofre de Cristal</div>
+                      <button style={{ border:"none", background:chestCrystalState==="ready"?"#0d9488":"rgba(255,255,255,0.05)", color:"#fff", borderRadius:6, padding:"4px 10px", fontSize:10, marginTop:6, fontWeight:"bold" }}>
+                        {chestCrystalState === "ready" && "RECLAMAR (+150p)"}
+                        {chestCrystalState === "animating" && "ABRIENDO..."}
+                        {chestCrystalState === "opened" && "PROCESADO"}
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+
+                {/* PASAPORTE ECOLÓGICO / GRUPOS PRIVADOS */}
+                <div style={{ background:"rgba(255,255,255,0.01)", border:"1px solid rgba(255,255,255,0.04)", borderRadius:18, padding:14, marginBottom:14 }}>
+                  <div style={{ textAlign:"center", borderBottom:"1px solid rgba(255,255,255,0.05)", paddingBottom:10, marginBottom:10 }}>
+                    <div style={{ fontSize:10, color:"#fbbf24", fontWeight:"bold" }}>PASAPORTE ECO INVITACIÓN</div>
+                    <div style={{ fontSize:20, fontWeight:"900", letterSpacing:2, color:"#fff", margin:"4px 0" }}>{userCode}</div>
+                    <button onClick={copyCodeToClipboard} style={{ background:"rgba(251,191,36,0.1)", border:"1px solid rgba(251,191,36,0.25)", color:"#fbbf24", padding:"4px 10px", borderRadius:6, fontSize:10, fontWeight:"bold", cursor:"pointer" }}>
+                      📋 Copiar Código Único
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleJoinLeague}>
+                    <div style={{ fontSize:11, color:"#4ade80", fontWeight:"bold", marginBottom:4 }}>INGRESAR O UNIRSE A ALIANZA LOCAL:</div>
+                    <div style={{ display:"flex", gap:6 }}>
+                      <input type="text" placeholder="Código o Nombre de Alianza..." value={leagueInput} onChange={e=>setLeagueInput(e.target.value)} style={{ flex:1, background:"rgba(0,0,0,0.25)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:8, padding:"6px 10px", color:"#fff", fontSize:12, outline:"none" }} />
+                      <button type="submit" style={{ background:"linear-gradient(135deg,#16a34a,#0d9488)", border:"none", color:"#fff", padding:"0 14px", borderRadius:8, fontSize:12, fontWeight:"bold", cursor:"pointer" }}>Vincular</button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* LISTA DE ALIANZAS ACTIVAS */}
+                <div>
+                  <div style={{ fontSize:11, color:"#86efac44", fontWeight:"bold", marginBottom:6 }}>ALIANZAS ACTIVAS</div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                    {myLeagues.map((lg, i) => (
+                      <div key={i} style={{ background:"rgba(255,255,255,0.02)", borderRadius:12, padding:10, display:"flex", alignItems:"center", justifyValue:"space-between", justifyContent:"space-between" }}>
+                        <div style={{ display:"flex", alignItems:"center", gap:8 }}><span>🛡️</span><span style={{ fontSize:12, fontWeight:"bold" }}>{lg}</span></div>
+                        <span style={{ fontSize:10, background:"rgba(74,222,128,0.1)", padding:"2px 8px", borderRadius:4, color:"#4ade80", fontWeight:"bold" }}>Líder #1</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* SUB-TAB 2: CLASIFICACIÓN GLOBAL (LEADERBOARD INTERACTIVA) */}
+            {leagueSubTab === "globalRank" && (
+              <div style={{ animation:"fadeUp .2s ease" }}>
+                <div style={{ fontSize:11, color:"#cbd5e1", fontWeight:"bold", marginBottom:8 }}>TABLA DE CLASIFICACIÓN GLOBAL (LIGA DE PLATA)</div>
+                <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                  {combinedLeaderboard.map((player, idx) => {
+                    const pos = idx + 1;
+                    const isTop3 = pos <= 3;
+                    return (
+                      <div key={idx} style={{ 
+                        display:"flex", 
+                        alignItems:"center", 
+                        justifyContent:"space-between", 
+                        padding:12, 
+                        borderRadius:14, 
+                        background: player.isUser ? "rgba(22,163,74,0.15)" : "rgba(255,255,255,0.01)", 
+                        border: player.isUser ? "1px solid #16a34a" : "1px solid rgba(255,255,255,0.04)" 
+                      }}>
+                        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                          <span style={{ 
+                            fontSize:12, 
+                            fontWeight:"bold", 
+                            width:20, 
+                            color: pos === 1 ? "#fbbf24" : pos === 2 ? "#cbd5e1" : pos === 3 ? "#b45309" : "#86efac44" 
+                          }}>
+                            {pos === 1 ? "🥇" : pos === 2 ? "🥈" : pos === 3 ? "🥉" : `#${pos}`}
+                          </span>
+                          <span style={{ fontSize:18 }}>{player.avatar}</span>
+                          <div>
+                            <div style={{ fontSize:12, fontWeight:"bold", color:player.isUser?"#4ade80":"#fff" }}>
+                              {player.name}
+                            </div>
+                            <div style={{ fontSize:9, color:"#86efac44" }}>División: {player.league}</div>
+                          </div>
+                        </div>
+                        <div style={{ textValueAlign:"right", textAlign:"right" }}>
+                          <span style={{ fontSize:12, fontWeight:"bold", color:"#fbbf24" }}>⭐ {player.points}</span>
+                          <span style={{ display:"block", fontSize:8, color:"#86efac44" }}>puntos</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
           </div>
         )}
 
-        {/* MENÚ DE NAVEGACIÓN INFERIOR TOTALMENTE ADAPTADO */}
-        <div style={{ position:"fixed", bottom:0, left:0, right:0, background:"rgba(7,18,30,0.92)", borderTop:"1px solid rgba(255,255,255,0.08)", backdropFilter:"blur(12px)", zIndex:999 }}>
-          <div style={{ maxWidth:480, margin:"0 auto", display:"flex", padding:"10px 10px 24px", gap:4 }}>
+        {/* ════════════════ BARRA DE NAVEGACIÓN INFERIOR PRINCIPAL ════════════════ */}
+        <div style={{ position:"fixed", bottom:0, left:0, right:0, background:"rgba(6,15,25,0.94)", borderTop:"1px solid rgba(255,255,255,0.06)", backdropFilter:"blur(12px)", zIndex:999 }}>
+          <div style={{ maxWidth:480, margin:"0 auto", display:"flex", padding:"10px 10px 22px", gap:2 }}>
             {[
-              { id:"scan",         label:"📸", title:"Plantas"  },
+              { id:"scan",         label:"📸", title:"Plantas" },
               { id:"recycle",      label:"♻️", title:"Reciclar" },
-              { id:"achievements", label:"🏆", title:"Logros"   },
-              { id:"profile",      label:"👤", title:"Perfil"   },
-              { id:"leagues",      label:"🛡️", title:"Ligas"    },
+              { id:"achievements", label:"🏆", title:"Logros" },
+              { id:"profile",      label:"👤", title:"Perfil" },
+              { id:"leagues",      label:"🛡️", title:"Ligas" },
             ].map(t => (
-              <button key={t.id} onClick={() => setTab(t.id)} style={{ flex:1, padding:"8px 0 6px", borderRadius:12, border:"none", background:tab===t.id?"linear-gradient(135deg,#16a34a,#0d9488)":"transparent", color:tab===t.id?"white":"#86efac55", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:2 }}>
-                <span style={{ fontSize:18 }}>{t.label}</span>
-                <span style={{ fontSize:10, fontWeight:tab===t.id?"700":"400" }}>{t.title}</span>
+              <button key={t.id} onClick={() => setTab(t.id)} style={{ flex:1, padding:"6px 0", borderRadius:10, border:"none", background:tab===t.id?"linear-gradient(135deg,#16a34a,#0d9488)":"transparent", color:tab===t.id?"white":"#86efac44", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:2 }}>
+                <span style={{ fontSize:16 }}>{t.label}</span>
+                <span style={{ fontSize:9, fontWeight:tab===t.id?"700":"400" }}>{t.title}</span>
               </button>
             ))}
           </div>
@@ -610,11 +746,24 @@ export default function EcoQuest() {
 
       </div>
 
-      {/* ESTILOS CSS REUTILIZABLES */}
+      {/* EFECTOS DE ANIMACIÓN EMITIDOS DIRECTAMENTE POR CSS */}
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes spin    { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        @keyframes slideIn { from{transform:translateY(-40px); opacity:0} to{transform:translateY(0); opacity:1} }
-        @keyframes fadeUp  { from{transform:translateY(12px); opacity:0} to{transform:translateY(0); opacity:1} }
+        @keyframes slideIn { from{transform:translateY(-30px); opacity:0} to{transform:translateY(0); opacity:1} }
+        @keyframes fadeUp  { from{transform:translateY(10px); opacity:0} to{transform:translateY(0); opacity:1} }
+        
+        .shake-effect {
+          animation: shake 0.4s ease infinite;
+        }
+        @keyframes shake {
+          0% { transform: translate(1px, 1px) rotate(0deg); }
+          10% { transform: translate(-1px, -2px) rotate(-1deg); }
+          30% { transform: translate(-3px, 0px) rotate(1deg); }
+          50% { transform: translate(1px, 2px) rotate(0deg); }
+          70% { transform: translate(-1px, 1px) rotate(-1deg); }
+          90% { transform: translate(3px, 2px) rotate(0deg); }
+          100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
       `}} />
 
     </div>
