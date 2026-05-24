@@ -38,7 +38,6 @@ const WEEKLY_CHALLENGES = [
   { id: "w_2", title: "Biodiversidad Urb", desc: "Registra 3 plantas diferentes en tu entorno", emoji: "🌻", target: 3, bonus: 60 },
 ];
 
-// Datos iniciales fijos de los competidores simulados en la Clasificación Global
 const SIMULATED_LEADERBOARD = [
   { name: "BioPaula🌱", points: 890, avatar: "🌸", league: "Plata" },
   { name: "ReciclaPro", points: 720, avatar: "🤖", league: "Plata" },
@@ -62,26 +61,63 @@ function getNextRank(points) {
   return RANKS.find(r => r.min > points) || null;
 }
 
-// Determinar el nivel de Liga Competitiva basado en puntos
 function getCompetitionLeague(points) {
   if (points >= 1200) return { name: "Oro", color: "#fbbf24", bg: "linear-gradient(135deg, #fbbf2422, #b4530911)", border: "#fbbf24cc", badge: "🥇" };
   if (points >= 350)  return { name: "Plata", color: "#cbd5e1", bg: "linear-gradient(135deg, #cbd5e122, #47556911)", border: "#cbd5e1cc", badge: "🥈" };
   return { name: "Bronce", color: "#b45309", bg: "linear-gradient(135deg, #b4530922, #78350f11)", border: "#b45309cc", badge: "🥉" };
 }
 
+// NUEVO GENERADOR DE FICHA TÉCNICA EXPANDIDA E INTELIGENTE
 function generateCareSpecs(commonName, scientificName, wikiExtract, family) {
-  const text = (wikiExtract + " " + family + " " + commonName).toLowerCase();
-  let leafType = "Perenne (Verde e intacta todo el año)";
-  if (text.includes("caduc") || text.includes("hoja caduca")) leafType = "Caduca (Se cae o debilita en otoño)";
-  else if (text.includes("cactus") || text.includes("suculenta")) leafType = "Carnosa / Suculenta (Almacena su agua)";
+  const text = (wikiExtract + " " + family + " " + commonName + " " + scientificName).toLowerCase();
+  
+  // 1. Riego
+  let watering = "Moderado (1 o 2 veces por semana, esperando a que seque el sustrato)";
+  if (text.includes("cactus") || text.includes("suculenta") || text.includes("desiert") || text.includes("seco") || text.includes("crasa")) {
+    watering = "Bajo (Solo cuando el suelo esté completamente seco, cada 10-15 días)";
+  } else if (text.includes("tropical") || text.includes("humed") || text.includes("helecho") || text.includes("ribera") || text.includes("acuatic")) {
+    watering = "Alto (Mantener sustrato húmedo constantemente constante, sin encharcar)";
+  }
 
-  let flowering = "Primavera y Verano";
-  if (text.includes("otoño")) flowering = "Finales de Verano y Otoño";
-  if (text.includes("no tiene flor") || text.includes("helecho")) flowering = "No florece (Esporas)";
+  // 2. Floración
+  let flowering = "Primavera y meses cálidos de Verano";
+  if (text.includes("otoño")) flowering = "Finales de Verano y Otoño completo";
+  if (text.includes("invierno")) flowering = "Meses fríos de Invierno y principios de Primavera";
+  if (text.includes("no tiene flor") || text.includes("helecho") || text.includes("musgo") || text.includes("pino") || text.includes("conífera") || text.includes("hongo") || text.includes("seta")) {
+    flowering = "No produce flores (Se reproduce por esporas o piñas/conos)";
+  }
 
-  let watering = "Moderado (1 o 2 veces por semana)";
-  if (text.includes("cactus") || text.includes("suculenta") || text.includes("seco")) watering = "Bajo (Cada 10-15 días)";
-  else if (text.includes("tropical") || text.includes("humed")) watering = "Alto (Sustrato húmedo constantemente)";
+  // 3. Luz y Exposición (Nuevo)
+  let light = "Semisombra o luz solar indirecta brillante (Ideal para evitar quemaduras)";
+  if (text.includes("árbol") || text.includes("pino") || text.includes("roble") || text.includes("cactus") || text.includes("mediterrán") || text.includes("olivo") || text.includes("sol")) {
+    light = "Pleno sol directo (Requiere alta radiación para fotosíntesis y desarrollo óptimo)";
+  } else if (text.includes("interior") || text.includes("sombra") || text.includes("bosque denso") || text.includes("musgo")) {
+    light = "Sombra protegida o ambientes interiores bien iluminados";
+  }
+
+  // 4. Tipo de Suelo (Nuevo)
+  let soil = "Sustrato universal estándar rico en materia orgánica y con buen drenaje";
+  if (text.includes("cactus") || text.includes("suculenta") || text.includes("arenos")) {
+    soil = "Suelo poroso y arenoso (Mezcla con perlita o arena para evitar retención hídrica)";
+  } else if (text.includes("árbol") || text.includes("profundo") || text.includes("arcill")) {
+    soil = "Suelo arcilloso profundo, firme, fértil y capaz de retener nutrientes minerales";
+  }
+
+  // 5. Plagas Comunes (Nuevo)
+  let pests = "Pulgón verde, cochinilla algodonosa y hongos radiculares por exceso de agua";
+  if (text.includes("árbol") || text.includes("pino") || text.includes("roble") || text.includes("leñosa")) {
+    pests = "Orugas procesionarias, barrenadores de madera, barrenillo y hongos de corteza";
+  } else if (text.includes("flor") || text.includes("rosa") || text.includes("huerto")) {
+    pests = "Mosca blanca, araña roja, trips y mildiu / oídio en las hojas tiernas";
+  }
+
+  // 6. Beneficio Ecológico (Nuevo)
+  let ecology = "Atrae insectos polinizadores (abejas, mariposas) y cobija microfauna urbana";
+  if (text.includes("árbol") || text.includes("bosque") || text.includes("grande")) {
+    ecology = "Fuerte sumidero de carbono (CO₂), produce oxígeno masivo, mitiga el calor y da sombra térmica";
+  } else if (text.includes("invasora") || text.includes("introducida")) {
+    ecology = "Alerta: Puede competir agresivamente por los recursos desplazando a la flora autóctona local";
+  }
 
   let feature = "Planta de gran valor ornamental y equilibrio ambiental.";
   if (wikiExtract) {
@@ -108,7 +144,7 @@ function generateCareSpecs(commonName, scientificName, wikiExtract, family) {
     ];
   }
 
-  return { leafType, flowering, watering, feature, curiosities };
+  return { leafType: "General", watering, flowering, light, soil, pests, ecology, feature, curiosities };
 }
 
 async function fetchWikiInfo(scientificName, commonName, family) {
@@ -136,32 +172,26 @@ async function fetchWikiInfo(scientificName, commonName, family) {
 
 export default function EcoQuest() {
   const [tab, setTab] = useState("scan");
-  const [leagueSubTab, setLeagueSubTab] = useState("myLeague"); // 'myLeague' o 'globalRank'
+  const [leagueSubTab, setLeagueSubTab] = useState("myLeague");
 
-  // Perfil del Usuario
   const [userName, setUserName] = useState(() => load("eq_username", "Explorador Verde"));
   const [userAvatar, setUserAvatar] = useState(() => load("eq_avatar", "🌿"));
   const [userCode] = useState(() => load("eq_usercode", "EQ-" + Math.floor(100000 + Math.random() * 900000)));
 
-  // Estados Base
   const [myPoints, setMyPoints] = useState(() => load("eq_points", 0));
   const [plantCount, setPlantCount] = useState(() => load("eq_plants", {}));
   const [recycleCount, setRecycleCount] = useState(() => load("eq_recycle", {}));
   const [invasoraCount, setInvasoraCount] = useState(() => load("eq_invasora", 0));
   const [unlockedAch, setUnlockedAch] = useState(() => load("eq_achievements", []));
 
-  // Ligas y Grupos Privados
   const [myLeagues, setMyLeagues] = useState(() => load("eq_leagues", ["Liga Vecinal"]));
   const [leagueInput, setLeagueInput] = useState("");
 
-  // Control de Cofres Mecánica Visual Animada
-  const [chestWoodState, setChestWoodState] = useState(() => load("eq_chest_wood", "ready")); // 'ready', 'animating', 'opened'
+  const [chestWoodState, setChestWoodState] = useState(() => load("eq_chest_wood", "ready"));
   const [chestCrystalState, setChestCrystalState] = useState(() => load("eq_chest_crystal", "ready"));
 
-  // Cuenta atrás simulada (Fin de jornada)
   const [timeLeft, setTimeLeft] = useState("2d 11h 45m 23s");
 
-  // Escáner e Interfaz
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -184,7 +214,6 @@ export default function EcoQuest() {
   useEffect(() => { save("eq_chest_wood", chestWoodState); }, [chestWoodState]);
   useEffect(() => { save("eq_chest_crystal", chestCrystalState); }, [chestCrystalState]);
 
-  // Actualizador del reloj de fin de liga simulado
   useEffect(() => {
     const interval = setInterval(() => {
       const now = new Date();
@@ -196,7 +225,6 @@ export default function EcoQuest() {
     return () => clearInterval(interval);
   }, []);
 
-  // Automatismo de logros fijos
   useEffect(() => {
     ACHIEVEMENTS.forEach(ach => {
       if (!unlockedAch.includes(ach.id) && ach.check(plantCount, recycleCount, invasoraCount)) {
@@ -273,11 +301,11 @@ export default function EcoQuest() {
         setResult(prev => prev ? { ...prev, wikiInfo } : prev);
         setLoadingInfo(false);
       } else {
-        setResult({ type: "none", message: "No se identificó la planta. Asegura buena iluminación." });
+        setResult({ type: "none", message: "No se identificó el espécimen. Asegura buena iluminación." });
         setScanning(false);
       }
     } catch {
-      setResult({ type: "error", message: "Fallo de conexión." });
+      setResult({ type: "error", message: "Fallo de conexión botánica." });
       setScanning(false);
     }
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -313,7 +341,6 @@ export default function EcoQuest() {
     showNotif("¡Código copiado al portapapeles!", "📋");
   };
 
-  // Apertura animada de cofres
   const triggerOpenChest = (type) => {
     if (type === "wood") {
       if (chestWoodState !== "ready") return;
@@ -333,14 +360,10 @@ export default function EcoQuest() {
   };
 
   const uniquePlants = Object.keys(plantCount).length;
-  const totalRecycled = Object.values(recycleCount).reduce((a, b) => a + b, 0);
   const currentRank = getRank(myPoints);
   const nextRank = getNextRank(myPoints);
-  const rankProgress = nextRank ? ((myPoints - currentRank.min) / (nextRank.min - currentRank.min)) * 100 : 100;
-  
   const compLeague = getCompetitionLeague(myPoints);
 
-  // Ordenar clasificación global sumando dinámicamente al usuario real
   const combinedLeaderboard = [
     { name: `${userName} (Tú)`, points: myPoints, avatar: userAvatar, league: compLeague.name, isUser: true },
     ...SIMULATED_LEADERBOARD
@@ -360,8 +383,8 @@ export default function EcoQuest() {
 
       <div style={{ maxWidth:480, margin:"0 auto" }}>
         
-        {/* BANNER DE USUARIO SUPERIOR */}
-        <div style={{ display:"flex", alignItems:"center", justifyValue:"space-between", padding:"20px 20px 10px", justifyContent:"space-between" }}>
+        {/* BANNER DE USUARIO */}
+        <div style={{ display:"flex", alignItems:"center", padding:"20px 20px 10px", justifyContent:"space-between" }}>
           <div style={{ display:"flex", alignItems:"center", gap:10 }}>
             <span style={{ fontSize:28, background:"rgba(255,255,255,0.06)", borderRadius:"50%", width:44, height:44, display:"flex", alignItems:"center", justifyContent:"center" }}>{userAvatar}</span>
             <div>
@@ -375,14 +398,13 @@ export default function EcoQuest() {
           </div>
         </div>
 
-        {/* LOGOTIPO GENERAL */}
         <div style={{ textAlign:"center", padding:"10px 0 15px" }}>
           <div style={{ fontSize:30, fontWeight:"900", background:"linear-gradient(135deg,#4ade80,#22d3ee)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>🌿 EcoQuest</div>
         </div>
 
-        {/* ════════════════ CONTROLADORES DE PESTAÑAS ════════════════ */}
+        {/* ════════════════ PESTAÑAS PRINCIPALES ════════════════ */}
         
-        {/* PESTAÑA 1: ESCÁNER DE PLANTAS */}
+        {/* PESTAÑA 1: ESCÁNER / CÁMARA */}
         {tab === "scan" && (
           <div style={{ padding:"0 20px", animation:"fadeUp .3s ease" }}>
             <div onClick={() => fileInputRef.current?.click()} style={{ background:"rgba(255,255,255,0.01)", borderRadius:24, padding:32, border:"2px dashed rgba(74,222,128,0.2)", textAlign:"center", marginBottom:20, cursor:"pointer" }}>
@@ -390,17 +412,18 @@ export default function EcoQuest() {
               {scanning ? (
                 <>
                   <div style={{ fontSize:36, animation:"spin 1.2s linear infinite", display:"inline-block" }}>🧬</div>
-                  <div style={{ marginTop:10, color:"#4ade80", fontSize:13, fontWeight:"600" }}>Analizando fotografía botánica...</div>
+                  <div style={{ marginTop:10, color:"#4ade80", fontSize:13, fontWeight:"600" }}>Analizando fotografía celular...</div>
                 </>
               ) : (
                 <>
                   <div style={{ fontSize:44 }}>📸</div>
-                  <div style={{ fontSize:14, fontWeight:"bold", color:"#4ade80", marginTop:8 }}>Escanear Planta u Hongo</div>
-                  <div style={{ fontSize:11, color:"#86efac44", marginTop:2 }}>Reconocimiento inteligente vía iNaturalist</div>
+                  <div style={{ fontSize:14, fontWeight:"bold", color:"#4ade80", marginTop:8 }}>Fotografiar Planta / Flor / Árbol</div>
+                  <div style={{ fontSize:11, color:"#86efac44", marginTop:2 }}>Identificación de flora inteligente vía iNaturalist</div>
                 </>
               )}
             </div>
 
+            {/* MEJORA COMPLETA DE LA FICHA TÉCNICA TRAS ESCANEO */}
             {result?.type === "plant" && (
               <div style={{ background:"rgba(255,255,255,0.02)", borderRadius:20, padding:18, border:"1px solid rgba(255,255,255,0.06)", marginBottom:20 }}>
                 <div style={{ display:"flex", gap:12, marginBottom:14 }}>
@@ -415,22 +438,53 @@ export default function EcoQuest() {
                 </div>
 
                 {loadingInfo ? (
-                  <div style={{ fontSize:11, color:"#86efac44", textAlign:"center", padding:8 }}>Generando curiosidades y datos...</div>
+                  <div style={{ fontSize:11, color:"#86efac44", textAlign:"center", padding:8 }}>Estructurando base de datos botánica...</div>
                 ) : result.wikiInfo ? (
                   <div>
-                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:12 }}>
-                      <div style={{ background:"rgba(255,255,255,0.02)", padding:8, borderRadius:8, fontSize:11 }}>
-                        <span style={{ color:"#86efac", display:"block", fontWeight:"bold", fontSize:9 }}>RIEGO</span>
-                        {result.wikiInfo.watering.split("(")[0]}
+                    {/* CUADRÍCULA DE SECCIONES CON ORDEN SOLICITADO Y NUEVAS EXPANSIONES */}
+                    <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:12 }}>
+                      
+                      {/* 1. RIEGO */}
+                      <div style={{ background:"rgba(255,255,255,0.02)", padding:"10px 12px", borderRadius:10, borderLeft:"3px solid #22d3ee" }}>
+                        <span style={{ color:"#22d3ee", fontWeight:"bold", fontSize:10, display:"block", letterSpacing:0.5 }}>💧 RIEGO RECOMENDADO</span>
+                        <span style={{ fontSize:12, color:"#e8f5e9" }}>{result.wikiInfo.watering}</span>
                       </div>
-                      <div style={{ background:"rgba(255,255,255,0.02)", padding:8, borderRadius:8, fontSize:11 }}>
-                        <span style={{ color:"#a78bfa", display:"block", fontWeight:"bold", fontSize:9 }}>FLORACIÓN</span>
-                        {result.wikiInfo.flowering}
+
+                      {/* 2. FLORACIÓN */}
+                      <div style={{ background:"rgba(255,255,255,0.02)", padding:"10px 12px", borderRadius:10, borderLeft:"3px solid #a78bfa" }}>
+                        <span style={{ color:"#a78bfa", fontWeight:"bold", fontSize:10, display:"block", letterSpacing:0.5 }}>🌸 ÉPOCA DE FLORACIÓN / MADUREZ</span>
+                        <span style={{ fontSize:12, color:"#e8f5e9" }}>{result.wikiInfo.flowering}</span>
                       </div>
+
+                      {/* 3. LUZ (NUEVO) */}
+                      <div style={{ background:"rgba(255,255,255,0.02)", padding:"10px 12px", borderRadius:10, borderLeft:"3px solid #fbbf24" }}>
+                        <span style={{ color:"#fbbf24", fontWeight:"bold", fontSize:10, display:"block", letterSpacing:0.5 }}>☀️ LUZ Y EXPOSICIÓN SOLAR</span>
+                        <span style={{ fontSize:12, color:"#e8f5e9" }}>{result.wikiInfo.light}</span>
+                      </div>
+
+                      {/* 4. SUELO (NUEVO) */}
+                      <div style={{ background:"rgba(255,255,255,0.02)", padding:"10px 12px", borderRadius:10, borderLeft:"3px solid #f59e0b" }}>
+                        <span style={{ color:"#f59e0b", fontWeight:"bold", fontSize:10, display:"block", letterSpacing:0.5 }}>🌱 TIPO DE SUELO E IDEAL DE SUSTRATO</span>
+                        <span style={{ fontSize:12, color:"#e8f5e9" }}>{result.wikiInfo.soil}</span>
+                      </div>
+
+                      {/* 5. PLAGAS (NUEVO) */}
+                      <div style={{ background:"rgba(255,255,255,0.02)", padding:"10px 12px", borderRadius:10, borderLeft:"3px solid #f87171" }}>
+                        <span style={{ color:"#f87171", fontWeight:"bold", fontSize:10, display:"block", letterSpacing:0.5 }}>🐛 AMENAZAS Y PLAGAS COMUNES</span>
+                        <span style={{ fontSize:12, color:"#e8f5e9" }}>{result.wikiInfo.pests}</span>
+                      </div>
+
+                      {/* 6. IMPACTO ECOLÓGICO (NUEVO) */}
+                      <div style={{ background:"rgba(255,255,255,0.02)", padding:"10px 12px", borderRadius:10, borderLeft:"3px solid #4ade80" }}>
+                        <span style={{ color:"#4ade80", fontWeight:"bold", fontSize:10, display:"block", letterSpacing:0.5 }}>🌍 BENEFICIO ECOLÓGICO</span>
+                        <span style={{ fontSize:12, color:"#e8f5e9" }}>{result.wikiInfo.ecology}</span>
+                      </div>
+
                     </div>
 
+                    {/* BLOQUE CURIOSIDADES */}
                     <div style={{ background:"linear-gradient(135deg,rgba(34,211,238,0.06),rgba(74,222,128,0.02))", padding:12, borderRadius:12, border:"1px solid rgba(34,211,238,0.15)" }}>
-                      <div style={{ fontSize:11, color:"#22d3ee", fontWeight:"bold", marginBottom:6 }}>💡 CURIOSIDADES ASOMBROSAS</div>
+                      <div style={{ fontSize:11, color:"#22d3ee", fontWeight:"bold", marginBottom:6 }}>💡 SABÍAS QUE...</div>
                       {result.wikiInfo.curiosities.map((cur, i) => (
                         <div key={i} style={{ fontSize:11, lineHeight:1.4, color:"#d1e7dd", marginBottom:i===0?6:0, paddingLeft:8, position:"relative" }}>
                           <span style={{ position:"absolute", left:0, color:"#22d3ee" }}>•</span> {cur}
@@ -444,7 +498,7 @@ export default function EcoQuest() {
 
             {uniquePlants > 0 && (
               <div>
-                <div style={{ fontSize:11, color:"#86efac44", fontWeight:"bold", marginBottom:6 }}>COLECCIÓN DE ESPECIES ({uniquePlants})</div>
+                <div style={{ fontSize:11, color:"#86efac44", fontWeight:"bold", marginBottom:6 }}>COLECCIÓN DE ESPECIES REGISTRADAS ({uniquePlants})</div>
                 <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
                   {Object.entries(plantCount).map(([name, qty]) => (
                     <span key={name} style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.05)", borderRadius:50, padding:"4px 10px", fontSize:11, color:"#fff" }}>
@@ -457,7 +511,7 @@ export default function EcoQuest() {
           </div>
         )}
 
-        {/* PESTAÑA 2: SECCIÓN RECICLAJE */}
+        {/* PESTAÑA 2: RECICLAJE */}
         {tab === "recycle" && (
           <div style={{ padding:"0 20px", animation:"fadeUp .3s ease" }}>
             <div style={{ fontSize:11, color:"#86efac44", fontWeight:"bold", marginBottom:10 }}>SELECCIONA TU ACCIÓN ECO</div>
@@ -478,7 +532,7 @@ export default function EcoQuest() {
           </div>
         )}
 
-        {/* PESTAÑA 3: LOGROS Y RETOS SEMANALES */}
+        {/* PESTAÑA 3: RETOS Y LOGROS */}
         {tab === "achievements" && (
           <div style={{ padding:"0 20px", animation:"fadeUp .3s ease" }}>
             <div style={{ marginBottom:18 }}>
@@ -525,7 +579,7 @@ export default function EcoQuest() {
           </div>
         )}
 
-        {/* PESTAÑA 4: PERFIL DE USUARIO Y RANGOS */}
+        {/* PESTAÑA 4: CONFIGURACIÓN DE PERFIL */}
         {tab === "profile" && (
           <div style={{ padding:"0 20px", animation:"fadeUp .3s ease" }}>
             <div style={{ background:"rgba(255,255,255,0.01)", border:"1px solid rgba(255,255,255,0.04)", borderRadius:20, padding:18, marginBottom:16 }}>
@@ -534,7 +588,7 @@ export default function EcoQuest() {
                   <div style={{ fontSize:11, color:"#4ade80", fontWeight:"bold", marginBottom:4 }}>APODO DE EXPLORADOR:</div>
                   <input type="text" value={tempName} onChange={e=>setTempName(e.target.value)} style={{ width:"100%", background:"rgba(0,0,0,0.3)", border:"1px solid #4ade80", borderRadius:10, padding:"8px 12px", color:"#fff", fontSize:13, outline:"none", marginBottom:12 }} />
                   
-                  <div style={{ fontSize:11, color:"#4ade80", fontWeight:"bold", marginBottom:4 }}>AVATAR DE LA NATURALEZA:</div>
+                  <div style={{ fontSize:11, color:"#4ade80", fontWeight:"bold", marginBottom:4 }}>AVATAR SELECCIONADO:</div>
                   <div style={{ display:"grid", gridTemplateColumns:"repeat(6, 1fr)", gap:6, marginBottom:14 }}>
                     {AVATAR_OPTIONS.map(av => (
                       <span key={av} onClick={()=>setTempAvatar(av)} style={{ fontSize:20, padding:4, textAlign:"center", borderRadius:8, background:tempAvatar===av?"#16a34a":"rgba(255,255,255,0.02)", cursor:"pointer" }}>{av}</span>
@@ -575,11 +629,10 @@ export default function EcoQuest() {
           </div>
         )}
 
-        {/* ════════════════ TAB NUEVA REESTRUCTURADA: LIGAS COMPETITIVAS ════════════════ */}
+        {/* PESTAÑA 5: LIGAS Y DIVISIONES COMPETITIVAS */}
         {tab === "leagues" && (
           <div style={{ padding:"0 20px", animation:"fadeUp .3s ease" }}>
             
-            {/* SUB-NAVEGACIÓN INTERNA DE LA SECCIÓN */}
             <div style={{ display:"flex", background:"rgba(0,0,0,0.25)", padding:3, borderRadius:12, gap:4, marginBottom:16 }}>
               <button onClick={() => setLeagueSubTab("myLeague")} style={{ flex:1, padding:"8px 0", border:"none", borderRadius:10, fontSize:11, fontWeight:"bold", cursor:"pointer", background:leagueSubTab==="myLeague"?"linear-gradient(135deg,#16a34a,#0d9488)":"transparent", color:leagueSubTab==="myLeague"?"#fff":"#86efac44" }}>
                 🛡️ Mi División y Alianzas
@@ -589,12 +642,10 @@ export default function EcoQuest() {
               </button>
             </div>
 
-            {/* SUB-TAB 1: LIGA ACTUAL, COFRES Y GRUPOS */}
             {leagueSubTab === "myLeague" && (
               <div>
-                {/* TARJETA DINÁMICA DE COMPETICIÓN */}
-                <div style={{ background:compLeague.bg, border:`1px solid ${compLeague.border}`, borderRadius:18, padding:16, marginBottom:16, position:"relative", overflow:"hidden" }}>
-                  <div style={{ display:"flex", justifyValue:"space-between", alignItems:"center", justifyContent:"space-between" }}>
+                <div style={{ background:compLeague.bg, border:`1px solid ${compLeague.border}`, borderRadius:18, padding:16, marginBottom:16 }}>
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
                     <div>
                       <div style={{ fontSize:10, color:compLeague.color, fontWeight:"bold", letterSpacing:1 }}>COMPETICIÓN ACTIVA</div>
                       <div style={{ fontSize:20, fontWeight:"900", color:"#fff", marginTop:2 }}>Liga de {compLeague.name} {compLeague.badge}</div>
@@ -605,16 +656,14 @@ export default function EcoQuest() {
                     </div>
                   </div>
                   <div style={{ marginTop:10, fontSize:11, color:"#e8f5e9" }}>
-                    Estás en la posición <b style={{ color:compLeague.color }}>#{userPosition}</b>. ¡Mantente en el Top para asegurar recompensas de temporada!
+                    Estás en la posición <b style={{ color:compLeague.color }}>#{userPosition}</b> mundial. ¡No dejes de sumar para ascender!
                   </div>
                 </div>
 
-                {/* MECÁNICA DE COFRES ANIMADOS CON EFECTO DE VIBRACIÓN */}
                 <div style={{ marginBottom:18 }}>
                   <div style={{ fontSize:11, color:"#22d3ee", fontWeight:"bold", marginBottom:8 }}>🎁 ALMACÉN DE COFRES DE RECOMPENSA</div>
                   <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
                     
-                    {/* COFRE DE MADERA */}
                     <div onClick={() => triggerOpenChest("wood")} style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.05)", borderRadius:16, padding:14, textAlign:"center", cursor:chestWoodState==="ready"?"pointer":"default" }}>
                       <div className={chestWoodState === "animating" ? "shake-effect" : ""} style={{ fontSize:36, transition:"transform 0.3s" }}>
                         {chestWoodState === "opened" ? "🔓✨" : "🧰"}
@@ -627,7 +676,6 @@ export default function EcoQuest() {
                       </button>
                     </div>
 
-                    {/* COFRE DE CRISTAL */}
                     <div onClick={() => triggerOpenChest("crystal")} style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.05)", borderRadius:16, padding:14, textAlign:"center", cursor:chestCrystalState==="ready"?"pointer":"default" }}>
                       <div className={chestCrystalState === "animating" ? "shake-effect" : ""} style={{ fontSize:36, transition:"transform 0.3s" }}>
                         {chestCrystalState === "opened" ? "🔓💎" : "📦"}
@@ -643,7 +691,6 @@ export default function EcoQuest() {
                   </div>
                 </div>
 
-                {/* PASAPORTE ECOLÓGICO / GRUPOS PRIVADOS */}
                 <div style={{ background:"rgba(255,255,255,0.01)", border:"1px solid rgba(255,255,255,0.04)", borderRadius:18, padding:14, marginBottom:14 }}>
                   <div style={{ textAlign:"center", borderBottom:"1px solid rgba(255,255,255,0.05)", paddingBottom:10, marginBottom:10 }}>
                     <div style={{ fontSize:10, color:"#fbbf24", fontWeight:"bold" }}>PASAPORTE ECO INVITACIÓN</div>
@@ -656,18 +703,17 @@ export default function EcoQuest() {
                   <form onSubmit={handleJoinLeague}>
                     <div style={{ fontSize:11, color:"#4ade80", fontWeight:"bold", marginBottom:4 }}>INGRESAR O UNIRSE A ALIANZA LOCAL:</div>
                     <div style={{ display:"flex", gap:6 }}>
-                      <input type="text" placeholder="Código o Nombre de Alianza..." value={leagueInput} onChange={e=>setLeagueInput(e.target.value)} style={{ flex:1, background:"rgba(0,0,0,0.25)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:8, padding:"6px 10px", color:"#fff", fontSize:12, outline:"none" }} />
+                      <input type="text" placeholder="Código o Nombre..." value={leagueInput} onChange={e=>setLeagueInput(e.target.value)} style={{ flex:1, background:"rgba(0,0,0,0.25)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:8, padding:"6px 10px", color:"#fff", fontSize:12, outline:"none" }} />
                       <button type="submit" style={{ background:"linear-gradient(135deg,#16a34a,#0d9488)", border:"none", color:"#fff", padding:"0 14px", borderRadius:8, fontSize:12, fontWeight:"bold", cursor:"pointer" }}>Vincular</button>
                     </div>
                   </form>
                 </div>
 
-                {/* LISTA DE ALIANZAS ACTIVAS */}
                 <div>
-                  <div style={{ fontSize:11, color:"#86efac44", fontWeight:"bold", marginBottom:6 }}>ALIANZAS ACTIVAS</div>
+                  <div style={{ fontSize:11, color:"#86efac44", fontWeight:"bold", marginBottom:6 }}>ALIANZAS GRUPALES ACTIVAS</div>
                   <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
                     {myLeagues.map((lg, i) => (
-                      <div key={i} style={{ background:"rgba(255,255,255,0.02)", borderRadius:12, padding:10, display:"flex", alignItems:"center", justifyValue:"space-between", justifyContent:"space-between" }}>
+                      <div key={i} style={{ background:"rgba(255,255,255,0.02)", borderRadius:12, padding:10, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
                         <div style={{ display:"flex", alignItems:"center", gap:8 }}><span>🛡️</span><span style={{ fontSize:12, fontWeight:"bold" }}>{lg}</span></div>
                         <span style={{ fontSize:10, background:"rgba(74,222,128,0.1)", padding:"2px 8px", borderRadius:4, color:"#4ade80", fontWeight:"bold" }}>Líder #1</span>
                       </div>
@@ -677,14 +723,12 @@ export default function EcoQuest() {
               </div>
             )}
 
-            {/* SUB-TAB 2: CLASIFICACIÓN GLOBAL (LEADERBOARD INTERACTIVA) */}
             {leagueSubTab === "globalRank" && (
               <div style={{ animation:"fadeUp .2s ease" }}>
                 <div style={{ fontSize:11, color:"#cbd5e1", fontWeight:"bold", marginBottom:8 }}>TABLA DE CLASIFICACIÓN GLOBAL (LIGA DE PLATA)</div>
                 <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
                   {combinedLeaderboard.map((player, idx) => {
                     const pos = idx + 1;
-                    const isTop3 = pos <= 3;
                     return (
                       <div key={idx} style={{ 
                         display:"flex", 
@@ -712,7 +756,7 @@ export default function EcoQuest() {
                             <div style={{ fontSize:9, color:"#86efac44" }}>División: {player.league}</div>
                           </div>
                         </div>
-                        <div style={{ textValueAlign:"right", textAlign:"right" }}>
+                        <div style={{ textAlign:"right" }}>
                           <span style={{ fontSize:12, fontWeight:"bold", color:"#fbbf24" }}>⭐ {player.points}</span>
                           <span style={{ display:"block", fontSize:8, color:"#86efac44" }}>puntos</span>
                         </div>
@@ -726,7 +770,7 @@ export default function EcoQuest() {
           </div>
         )}
 
-        {/* ════════════════ BARRA DE NAVEGACIÓN INFERIOR PRINCIPAL ════════════════ */}
+        {/* BARRA DE NAVEGACIÓN INFERIOR PESTAÑAS */}
         <div style={{ position:"fixed", bottom:0, left:0, right:0, background:"rgba(6,15,25,0.94)", borderTop:"1px solid rgba(255,255,255,0.06)", backdropFilter:"blur(12px)", zIndex:999 }}>
           <div style={{ maxWidth:480, margin:"0 auto", display:"flex", padding:"10px 10px 22px", gap:2 }}>
             {[
@@ -746,7 +790,7 @@ export default function EcoQuest() {
 
       </div>
 
-      {/* EFECTOS DE ANIMACIÓN EMITIDOS DIRECTAMENTE POR CSS */}
+      {/* ESTILOS DE ANIMACIÓN CSS DIRECTOS */}
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes spin    { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
         @keyframes slideIn { from{transform:translateY(-30px); opacity:0} to{transform:translateY(0); opacity:1} }
