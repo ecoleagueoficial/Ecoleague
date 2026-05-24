@@ -50,44 +50,36 @@ function getNextRank(points) {
   return RANKS.find(r => r.min > points) || null;
 }
 
-// ── NUEVO MOTOR DE DETALLES BOTÁNICOS INTELIGENTES ──────────────────────────
-// Como no hay API gratuita de cuidados, generamos una lógica heurística basada en la familia 
-// e información clave del extracto de Wikipedia para dar datos súper precisos de cuidado.
+// ── PROCESADOR INTELIGENTE DE CUIDADOS BOTÁNICOS ──────────────────────────
 function generateCareSpecs(commonName, scientificName, wikiExtract, family) {
   const text = (wikiExtract + " " + family + " " + commonName).toLowerCase();
   
-  // 1. Tipo de Hoja predeterminado por familia o palabras clave
-  let leafType = "Perenne (Verde todo el año)";
+  let leafType = "Perenne (Verde e intacta todo el año)";
   if (text.includes("caduc") || text.includes("hoja caduca") || text.includes("pierde la hoja")) {
-    leafType = "Caduca (Se cae en otoño/invierno)";
+    leafType = "Caduca (Se cae o debilita en otoño/invierno)";
   } else if (text.includes("cactus") || text.includes("suculenta") || text.includes("crasa") || text.includes("cactaceae")) {
-    leafType = "Carnosa / Suculenta (Almacena agua)";
+    leafType = "Carnosa / Suculenta (Gruesa, almacena su propia agua)";
   } else if (text.includes("pino") || text.includes("conífera") || text.includes("acícula")) {
-    leafType = "Acicular (Forma de aguja)";
+    leafType = "Acicular (Hojas finas en forma de aguja)";
   }
 
-  // 2. Época de Floración inteligenciada
   let flowering = "Primavera y Verano";
   if (text.includes("otoño") || text.includes("autumn")) flowering = "Finales de Verano y Otoño";
-  if (text.includes("invierno") || text.includes("winter")) flowering = "Invierno / Principios de Primavera";
-  if (text.includes("todo el año") || text.includes("siempre florece")) flowering = "Continua (Casi todo el año)";
-  if (text.includes("no tiene flor") || text.includes("helecho") || text.includes("fern")) flowering = "No florece (Planta esporófita)";
+  if (text.includes("invierno") || text.includes("winter")) flowering = "Invierno y principios de Primavera";
+  if (text.includes("todo el año") || text.includes("siempre florece")) flowering = "Continua (Florece de manera constante)";
+  if (text.includes("no tiene flor") || text.includes("helecho") || text.includes("fern")) flowering = "No florece (Planta por esporas)";
 
-  // 3. Frecuencia de Riego estimada de forma segura
-  let watering = "Moderado (1 o 2 veces por semana, dejar secar la capa superior)";
+  let watering = "Moderado (1 o 2 veces por semana, dejando secar la superficie)";
   if (text.includes("cactus") || text.includes("suculenta") || text.includes("desiert") || text.includes("seco") || text.includes("crasa")) {
-    watering = "Bajo (Cada 10-15 días, solo cuando el suelo esté completamente seco)";
+    watering = "Bajo (Cada 10-15 días, solo si la tierra está completamente seca)";
   } else if (text.includes("tropical") || text.includes("humed") || text.includes("pantano") || text.includes("río") || text.includes("agua")) {
-    watering = "Alto (Mantener el sustrato siempre húmedo, sin encharcar)";
+    watering = "Alto (Sustrato siempre húmedo pero bien drenado, sin encharcar)";
   }
 
-  // 4. Extraer una característica curiosa/destacada real que sea corta
-  let feature = "Planta de gran valor ecológico ideal para entornos biodiversos.";
+  let feature = "Planta de gran valor ornamental y equilibrio en ecosistemas locales.";
   if (wikiExtract) {
-    // Intentamos buscar la primera frase interesante del extracto que no sea solo la definición taxonómica
     const sentences = wikiExtract.split(/[.🧱]/);
     if (sentences.length > 1) {
-      // Tomamos la segunda o primera frase descriptiva limpia
       const candidate = sentences[1].trim().length > 30 ? sentences[1].trim() : sentences[0].trim();
       feature = candidate.endsWith(".") ? candidate : candidate + ".";
     }
@@ -117,7 +109,6 @@ async function fetchWikiInfo(scientificName, commonName, family) {
     } catch {}
   }
 
-  // Si no se encuentra en español, intentamos en inglés
   if (!rawExtract) {
     try {
       const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(scientificName)}`);
@@ -130,17 +121,10 @@ async function fetchWikiInfo(scientificName, commonName, family) {
     } catch {}
   }
 
-  // Procesamos para sacar la ficha técnica limpia que nos has pedido
   const careSpecs = generateCareSpecs(commonName, scientificName, rawExtract, family || "");
-
-  return {
-    ...careSpecs,
-    thumbnail,
-    wikiUrl
-  };
+  return { ...careSpecs, thumbnail, wikiUrl };
 }
 
-// ── iNaturalist taxon details ─────────────────────────────────────────────────
 async function fetchInatTaxonDetails(taxonId) {
   try {
     const res = await fetch(`https://api.inaturalist.org/v1/taxa/${taxonId}`, {
@@ -160,7 +144,7 @@ async function fetchInatTaxonDetails(taxonId) {
   } catch { return null; }
 }
 
-// ── Mapa Leaflet ──────────────────────────────────────────────────────────────
+// ── Componente Mapa ──────────────────────────────────────────────────────────
 function PlantMap({ markers }) {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -344,7 +328,6 @@ export default function EcoQuest() {
         if (isInvasora) setInvasoraCount(c => c + 1);
         addPoints(pts, name, "🌿");
 
-        // Cargar info extra modificada paso a paso
         setLoadingInfo(true);
         const [wikiInfo, taxonDetails] = await Promise.all([
           fetchWikiInfo(scientific, name, familyName),
@@ -486,7 +469,6 @@ export default function EcoQuest() {
 
             {result?.type==="plant" && (
               <div style={{ background:"linear-gradient(135deg,rgba(22,163,74,0.1),rgba(13,148,136,0.1))", borderRadius:22, padding:20, border:"1px solid rgba(74,222,128,0.25)", marginBottom:20, animation:"fadeUp .4s ease" }}>
-                {/* Cabecera */}
                 <div style={{ display:"flex", gap:14, marginBottom:18 }}>
                   {result.inatImage
                     ? <img src={result.inatImage} alt="" style={{ width:64, height:64, borderRadius:14, objectFit:"cover", flexShrink:0 }} />
@@ -505,7 +487,6 @@ export default function EcoQuest() {
                   </div>
                 </div>
 
-                {/* NUEVA SECCIÓN: FICHA DE CUIDADOS REALIZADA SEGÚN TU SOLICITUD */}
                 <div style={{ fontSize:13, fontWeight:"bold", color:"#4ade80", letterSpacing:1, marginBottom:10, textTransform:"uppercase" }}>📋 Guía de Cuidados y Datos</div>
                 
                 {loadingInfo ? (
@@ -514,27 +495,22 @@ export default function EcoQuest() {
                   </div>
                 ) : result.wikiInfo ? (
                   <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 16 }}>
-                    
                     <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 12, padding: "10px 14px", borderLeft: "4px solid #4ade80" }}>
                       <span style={{ color: "#86efac", fontSize: 11, fontWeight: "bold", display: "block" }}>🍁 TIPO DE HOJA</span>
                       <span style={{ fontSize: 13, color: "#fff" }}>{result.wikiInfo.leafType}</span>
                     </div>
-
                     <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 12, padding: "10px 14px", borderLeft: "4px solid #a78bfa" }}>
                       <span style={{ color: "#c084fc", fontSize: 11, fontWeight: "bold", display: "block" }}>🌸 ÉPOCA DE FLORACIÓN</span>
                       <span style={{ fontSize: 13, color: "#fff" }}>{result.wikiInfo.flowering}</span>
                     </div>
-
                     <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 12, padding: "10px 14px", borderLeft: "4px solid #22d3ee" }}>
                       <span style={{ color: "#22d3ee", fontSize: 11, fontWeight: "bold", display: "block" }}>💧 FRECUENCIA DE RIEGO</span>
                       <span style={{ fontSize: 13, color: "#fff" }}>{result.wikiInfo.watering}</span>
                     </div>
-
                     <div style={{ background: "rgba(251,191,36,0.06)", borderRadius: 12, padding: "12px 14px", border: "1px dashed rgba(251,191,36,0.3)" }}>
                       <span style={{ color: "#fbbf24", fontSize: 11, fontWeight: "bold", display: "block", marginBottom: 2 }}>✨ CARACTERÍSTICA DESTACADA</span>
                       <p style={{ fontSize: 13, color: "#e8f5e9", margin: 0, lineHeight: 1.5, fontStyle: "italic" }}>"{result.wikiInfo.feature}"</p>
                     </div>
-
                     {result.wikiInfo.wikiUrl && (
                       <a href={result.wikiInfo.wikiUrl} target="_blank" rel="noopener noreferrer" style={{ display:"inline-block", alignSelf: "flex-start", marginTop:4, fontSize:11, color:"#86efac", textDecoration:"none", background:"rgba(74,222,128,0.1)", borderRadius:50, padding:"4px 12px" }}>
                         Ver artículo completo →
@@ -547,22 +523,20 @@ export default function EcoQuest() {
                   </div>
                 )}
 
-                {/* Info básica taxonómica abajo en pequeño */}
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
                   {result.family && (
                     <div style={{ background:"rgba(255,255,255,0.02)", borderRadius:10, padding:"8px 10px" }}>
                       <div style={{ fontSize:9, color:"#86efac66", fontWeight:"700" }}>FAMILIA</div>
-                      <div style={{ fontSize:11, color:#cce5cc }}>{result.family}</div>
+                      <div style={{ fontSize:11, color:"#cce5cc" }}>{result.family}</div>
                     </div>
                   )}
                   {result.observations > 0 && (
                     <div style={{ background:"rgba(255,255,255,0.02)", borderRadius:10, padding:"8px 10px" }}>
                       <div style={{ fontSize:9, color:"#86efac66", fontWeight:"700" }}>REGISTROS GLOBALES</div>
-                      <div style={{ fontSize:11, color:#cce5cc }}>{result.observations.toLocaleString()}</div>
+                      <div style={{ fontSize:11, color:"#cce5cc" }}>{result.observations.toLocaleString()}</div>
                     </div>
                   )}
                 </div>
-
               </div>
             )}
 
@@ -588,7 +562,7 @@ export default function EcoQuest() {
           </div>
         )}
 
-        {/* EL RESTO DE TABS SE MANTIENEN IGUAL (RECICLAR, ETC) */}
+        {/* ══════════ TAB RECICLAR ══════════ */}
         {tab==="recycle" && (
           <div style={{ padding:"0 20px" }}>
             <div style={{ fontSize:10, letterSpacing:3, color:"#86efac55", textTransform:"uppercase", marginBottom:14 }}>Toca lo que reciclas</div>
@@ -602,9 +576,22 @@ export default function EcoQuest() {
                 </div>
               ))}
             </div>
+            {Object.keys(recycleCount).length > 0 && (
+              <div style={{ marginTop: 20, background: "rgba(255,255,255,0.02)", padding: 15, borderRadius: 14 }}>
+                <span style={{ fontSize: 12, color: "#86efac77", display: "block", marginBottom: 8 }}>RESUMEN RECICLAJE</span>
+                {Object.entries(recycleCount).map(([id, val]) => {
+                  const rItem = RECYCLE_ITEMS.find(i => i.id === id);
+                  return val > 0 ? (
+                    <div key={id} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, padding: "4px 0" }}>
+                      <span>{rItem?.emoji} {rItem?.label}</span>
+                      <span style={{ fontWeight: "bold", color: rItem?.color }}>{val} uds</span>
+                    </div>
+                  ) : null;
+                })}
+              </div>
+            )}
           </div>
         )}
-
       </div>
     </div>
   );
