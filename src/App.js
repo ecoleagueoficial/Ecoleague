@@ -5,12 +5,12 @@ const INAT_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VyX2lkIjoxMDU2NTcwNywiZXhwIjoxNzc
 const AVATAR_OPTIONS = ["🌿","🌱","🌳","🌸","🍃","🌻","🦋","🐝","🌾","🍀","🌊","🦅","🐢","🦊","🌵","🍄"];
 
 const RANKS = [
-  { name: "Semilla",     min: 0,    emoji: "🌱", color: "#86efac" },
-  { name: "Brote",       min: 100,  emoji: "🌿", color: "#4ade80" },
-  { name: "Explorador",  min: 300,  emoji: "🔭", color: "#22d3ee" },
-  { name: "Botánico",    min: 700,  emoji: "🌸", color: "#a78bfa" },
-  { name: "Naturalista", min: 1500, emoji: "🌳", color: "#fbbf24" },
-  { name: "Guardián",    min: 3000, emoji: "🛡️", color: "#f87171" },
+  { name: "Semilla",     min: 0,    emoji: "🌱", color: "#86efac", desc: "Acabas de plantar tu interés por la naturaleza." },
+  { name: "Brote",       min: 100,  emoji: "🌿", color: "#4ade80", desc: "Tu conocimiento empieza a emerger con fuerza." },
+  { name: "Explorador",  min: 300,  emoji: "🔭", color: "#22d3ee", desc: "Buscas rincones verdes y cuidas tu entorno activo." },
+  { name: "Botánico",    min: 700,  emoji: "🌸", color: "#a78bfa", desc: "Reconoces las sutilezas de la flora urbana y silvestre." },
+  { name: "Naturalista", min: 1500, emoji: "🌳", color: "#fbbf24", desc: "Un pilar de la comunidad con un gran impacto ecológico." },
+  { name: "Guardián",    min: 3000, emoji: "🛡️", color: "#f87171", desc: "Protector definitivo del planeta y maestro reciclador." },
 ];
 
 const RECYCLE_ITEMS = [
@@ -22,15 +22,24 @@ const RECYCLE_ITEMS = [
   { id: "battery",  label: "Pila",      emoji: "🔋", points: 20, color: "#FF6B6B" },
 ];
 
+// Catálogo ampliado de logros fijos
 const ACHIEVEMENTS = [
-  { id: "first_plant",  title: "Primer brote",    desc: "Identifica tu primera planta",     emoji: "🌱", bonus: 20,  check: (p)       => Object.keys(p).length >= 1 },
-  { id: "plants_5",     title: "Explorador",       desc: "Identifica 5 especies distintas",  emoji: "🔭", bonus: 50,  check: (p)       => Object.keys(p).length >= 5 },
-  { id: "plants_10",    title: "Botánico",           desc: "Identifica 10 especies distintas", emoji: "🌿", bonus: 150, check: (p)       => Object.keys(p).length >= 10 },
-  { id: "plants_20",    title: "Naturalista",       desc: "Identifica 20 especies distintas", emoji: "🌳", bonus: 400, check: (p)       => Object.keys(p).length >= 20 },
-  { id: "recycle_5",    title: "Eco-consciente",    desc: "Recicla 5 objetos",                 emoji: "♻️", bonus: 30,  check: (p,r)     => Object.values(r).reduce((a,b)=>a+b,0) >= 5 },
-  { id: "recycle_20",   title: "Eco-héroe",          desc: "Recicla 20 objetos",               emoji: "🦸", bonus: 100, check: (p,r)     => Object.values(r).reduce((a,b)=>a+b,0) >= 20 },
-  { id: "all_recycle",  title: "Reciclador total",  desc: "Recicla al menos 1 de cada tipo",  emoji: "🏅", bonus: 80,  check: (p,r)     => RECYCLE_ITEMS.every(i=>(r[i.id]||0)>=1) },
-  { id: "invasora",     title: "Detector invasor",  desc: "Encuentra una planta invasora",    emoji: "🚨", bonus: 60,  check: (p,r,inv) => inv > 0 },
+  { id: "first_plant",  title: "Primer Brote",      desc: "Identifica tu primera planta",     emoji: "🌱", bonus: 20,  check: (p)       => Object.keys(p).length >= 1 },
+  { id: "plants_5",     title: "Explorador Verde",  desc: "Identifica 5 especies distintas",  emoji: "🔭", bonus: 50,  check: (p)       => Object.keys(p).length >= 5 },
+  { id: "plants_12",    title: "Maestro Botánico",   desc: "Identifica 12 especies distintas", emoji: "🌿", bonus: 180, check: (p)       => Object.keys(p).length >= 12 },
+  { id: "plants_25",    title: "Gran Naturalista",  desc: "Identifica 25 especies distintas", emoji: "🌳", bonus: 500, check: (p)       => Object.keys(p).length >= 25 },
+  { id: "recycle_5",    title: "Eco-Consciente",    desc: "Recicla 5 objetos en total",       emoji: "♻️", bonus: 30,  check: (p,r)     => Object.values(r).reduce((a,b)=>a+b,0) >= 5 },
+  { id: "recycle_25",   title: "Héroe del Contenedor", desc: "Recicla 25 objetos en total",    emoji: "🦸", bonus: 150, check: (p,r)     => Object.values(r).reduce((a,b)=>a+b,0) >= 25 },
+  { id: "recycle_50",   title: "Residuos Cero",     desc: "Recicla 50 objetos en total",       emoji: "🌌", bonus: 350, check: (p,r)     => Object.values(r).reduce((a,b)=>a+b,0) >= 50 },
+  { id: "all_recycle",  title: "Reciclador Total",  desc: "Recicla al menos 1 de cada tipo",  emoji: "🏅", bonus: 100, check: (p,r)     => RECYCLE_ITEMS.every(i=>(r[i.id]||0)>=1) },
+  { id: "battery_king", title: "Carga Limpia",      desc: "Recicla 5 pilas contaminantes",    emoji: "⚡", bonus: 80,  check: (p,r)     => (r["battery"]||0) >= 5 },
+  { id: "invasora",     title: "Alerta Biológica",  desc: "Encuentra una planta invasora",    emoji: "🚨", bonus: 60,  check: (p,r,inv) => inv > 0 },
+];
+
+// Retos semanales fijos simulados
+const WEEKLY_CHALLENGES = [
+  { id: "w_1", title: "Operación Vidrio", desc: "Recicla 3 botellas o envases de vidrio esta semana", emoji: "🍾", target: 3, bonus: 40, check: (r) => (r["glass"] || 0) },
+  { id: "w_2", title: "Biodiversidad", desc: "Registra 3 plantas diferentes en tu entorno", emoji: "🌻", target: 3, bonus: 60, check: (p) => Object.keys(p).length },
 ];
 
 const STATUS_COLORS = { "Autóctona": "#4CAF50", "Invasora": "#F44336", "Cultivada": "#FF9800" };
@@ -50,7 +59,7 @@ function getNextRank(points) {
   return RANKS.find(r => r.min > points) || null;
 }
 
-// ── PROCESADOR INTELIGENTE DE CUIDADOS BOTÁNICOS ──────────────────────────
+// Generador Inteligente de Cuidados y Curiosidades Añadidas
 function generateCareSpecs(commonName, scientificName, wikiExtract, family) {
   const text = (wikiExtract + " " + family + " " + commonName).toLowerCase();
   
@@ -59,21 +68,18 @@ function generateCareSpecs(commonName, scientificName, wikiExtract, family) {
     leafType = "Caduca (Se cae o debilita en otoño/invierno)";
   } else if (text.includes("cactus") || text.includes("suculenta") || text.includes("crasa") || text.includes("cactaceae")) {
     leafType = "Carnosa / Suculenta (Gruesa, almacena su propia agua)";
-  } else if (text.includes("pino") || text.includes("conífera") || text.includes("acícula")) {
-    leafType = "Acicular (Hojas finas en forma de aguja)";
   }
 
   let flowering = "Primavera y Verano";
   if (text.includes("otoño") || text.includes("autumn")) flowering = "Finales de Verano y Otoño";
   if (text.includes("invierno") || text.includes("winter")) flowering = "Invierno y principios de Primavera";
-  if (text.includes("todo el año") || text.includes("siempre florece")) flowering = "Continua (Florece de manera constante)";
-  if (text.includes("no tiene flor") || text.includes("helecho") || text.includes("fern")) flowering = "No florece (Planta por esporas)";
+  if (text.includes("no tiene flor") || text.includes("helecho")) flowering = "No florece (Se reproduce por esporas)";
 
   let watering = "Moderado (1 o 2 veces por semana, dejando secar la superficie)";
-  if (text.includes("cactus") || text.includes("suculenta") || text.includes("desiert") || text.includes("seco") || text.includes("crasa")) {
-    watering = "Bajo (Cada 10-15 días, solo si la tierra está completamente seca)";
-  } else if (text.includes("tropical") || text.includes("humed") || text.includes("pantano") || text.includes("río") || text.includes("agua")) {
-    watering = "Alto (Sustrato siempre húmedo pero bien drenado, sin encharcar)";
+  if (text.includes("cactus") || text.includes("suculenta") || text.includes("desiert") || text.includes("seco")) {
+    watering = "Bajo (Cada 10-15 días, solo si la tierra está totalmente seca)";
+  } else if (text.includes("tropical") || text.includes("humed") || text.includes("pantano") || text.includes("río")) {
+    watering = "Alto (Mantener sustrato siempre húmedo sin encharcar)";
   }
 
   let feature = "Planta de gran valor ornamental y equilibrio en ecosistemas locales.";
@@ -85,7 +91,30 @@ function generateCareSpecs(commonName, scientificName, wikiExtract, family) {
     }
   }
 
-  return { leafType, flowering, watering, feature };
+  // ── SECCIÓN NUEVA: GENERACIÓN DE 2 CURIOSIDADES ──
+  let curiosities = [
+    "Sus células contienen cloroplastos que realizan la fotosíntesis, liberando oxígeno vital a nuestra atmósfera.",
+    "Forma complejas redes invisibles bajo tierra con hongos (micorrizas) para intercambiar nutrientes con sus vecinas."
+  ];
+
+  if (text.includes("cactus") || text.includes("suculenta") || text.includes("crasa")) {
+    curiosities = [
+      "Abre sus estomas únicamente por la noche (metabolismo CAM) para evitar perder agua por evaporación diurna.",
+      "Sus espinas son en realidad hojas evolutivamente modificadas para protegerse y condensar el rocío matutino."
+    ];
+  } else if (text.includes("árbol") || text.includes("tree") || text.includes("pino") || text.includes("roble")) {
+    curiosities = [
+      "Un ejemplar maduro de este tipo puede absorber hasta 22 kg de dióxido de carbono gaseoso al año.",
+      "Los anillos de su tronco no solo marcan su edad, sino también los años de sequía o lluvias intensas que ha sobrevivido."
+    ];
+  } else if (text.includes("flor") || text.includes("abeja") || text.includes("poliniza")) {
+    curiosities = [
+      "Sus colores y patrones geométricos (muchos visibles solo bajo luz ultravioleta) actúan como pistas de aterrizaje para polinizadores.",
+      "Ciertas especies emiten compuestos volátiles específicos para alertar a plantas vecinas si están siendo atacadas por insectos."
+    ];
+  }
+
+  return { leafType, flowering, watering, feature, curiosities };
 }
 
 async function fetchWikiInfo(scientificName, commonName, family) {
@@ -109,120 +138,40 @@ async function fetchWikiInfo(scientificName, commonName, family) {
     } catch {}
   }
 
-  if (!rawExtract) {
-    try {
-      const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(scientificName)}`);
-      if (res.ok) {
-        const data = await res.json();
-        rawExtract = data.extract || "";
-        thumbnail = thumbnail || data.thumbnail?.source || null;
-        wikiUrl = wikiUrl || data.content_urls?.desktop?.page || null;
-      }
-    } catch {}
-  }
-
   const careSpecs = generateCareSpecs(commonName, scientificName, rawExtract, family || "");
   return { ...careSpecs, thumbnail, wikiUrl };
 }
 
-async function fetchInatTaxonDetails(taxonId) {
-  try {
-    const res = await fetch(`https://api.inaturalist.org/v1/taxa/${taxonId}`, {
-      headers: { "Authorization": INAT_TOKEN }
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    const taxon = data.results?.[0];
-    if (!taxon) return null;
-    return {
-      conservation: taxon.conservation_status?.status_name || null,
-      rank: taxon.rank || null,
-      extinct: taxon.extinct || false,
-      observations: taxon.observations_count || 0,
-      ancestors: taxon.ancestor_ids || [],
-    };
-  } catch { return null; }
-}
-
-// ── Componente Mapa ──────────────────────────────────────────────────────────
-function PlantMap({ markers }) {
-  const mapRef = useRef(null);
-  const mapInstanceRef = useRef(null);
-  const markersRef = useRef([]);
-
-  useEffect(() => {
-    if (!window.L) {
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
-      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-      document.head.appendChild(link);
-      const script = document.createElement("script");
-      script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-      script.onload = initMap;
-      document.head.appendChild(script);
-    } else {
-      initMap();
-    }
-    function initMap() {
-      if (mapInstanceRef.current || !mapRef.current) return;
-      const map = window.L.map(mapRef.current).setView([40.4168, -3.7038], 5);
-      window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap", maxZoom: 19,
-      }).addTo(map);
-      mapInstanceRef.current = map;
-      addMarkers(map);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (mapInstanceRef.current) addMarkers(mapInstanceRef.current);
-  }, [markers]);
-
-  function addMarkers(map) {
-    markersRef.current.forEach(m => m.remove());
-    markersRef.current = [];
-    markers.forEach(m => {
-      const icon = window.L.divIcon({
-        html: `<div style="background:linear-gradient(135deg,#16a34a,#0d9488);border-radius:50% 50% 50% 0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px;transform:rotate(-45deg);box-shadow:0 2px 8px #0007"><span style="transform:rotate(45deg)">🌿</span></div>`,
-        className: "", iconSize: [32, 32], iconAnchor: [16, 32],
-      });
-      const marker = window.L.marker([m.lat, m.lng], { icon })
-        .addTo(map)
-        .bindPopup(`<b>${m.name}</b><br><i>${m.scientific || ""}</i><br><small>${m.date}</small>`);
-      markersRef.current.push(marker);
-    });
-    if (markers.length > 0) {
-      const group = window.L.featureGroup(markersRef.current);
-      map.fitBounds(group.getBounds().pad(0.3));
-    }
-  }
-
-  return <div ref={mapRef} style={{ width: "100%", height: 340, borderRadius: 20, overflow: "hidden" }} />;
-}
-
-// ── COMPONENTE PRINCIPAL ──────────────────────────────────────────────────────
 export default function EcoQuest() {
   const [tab, setTab] = useState("scan");
 
-  const [userName,   setUserName]   = useState(() => load("eq_username", ""));
+  // Perfil del Usuario
+  const [userName,   setUserName]   = useState(() => load("eq_username", "Explorador Verde"));
   const [userAvatar, setUserAvatar] = useState(() => load("eq_avatar", "🌿"));
+  const [userCode]                  = useState(() => load("eq_usercode", "EQ-" + Math.floor(100000 + Math.random() * 900000)));
+
+  // Sistema de Puntos y Estadísticas
   const [myPoints,          setMyPoints]          = useState(() => load("eq_points", 0));
   const [plantCount,        setPlantCount]        = useState(() => load("eq_plants", {}));
   const [recycleCount,      setRecycleCount]      = useState(() => load("eq_recycle", {}));
   const [invasoraCount,      setInvasoraCount]     = useState(() => load("eq_invasora", 0));
   const [unlockedAch,        setUnlockedAch]       = useState(() => load("eq_achievements", []));
-  const [plantMarkers,      setPlantMarkers]      = useState(() => load("eq_markers", []));
-  const [locationPerm,      setLocationPerm]      = useState(() => load("eq_loc_perm", null));
 
+  // Ligas (Novedad)
+  const [myLeagues,          setMyLeagues]         = useState(() => load("eq_leagues", ["Liga Global"]));
+  const [leagueInput,        setLeagueInput]       = useState("");
+
+  // Escáner
   const [scanning,    setScanning]    = useState(false);
   const [result,      setResult]      = useState(null);
   const [previewUrl,  setPreviewUrl]  = useState(null);
   const [loadingInfo, setLoadingInfo] = useState(false);
   const fileInputRef = useRef(null);
 
+  // Estados de edición de perfil
   const [editingProfile, setEditingProfile] = useState(false);
-  const [tempName,       setTempName]       = useState("");
-  const [tempAvatar,     setTempAvatar]     = useState("🌿");
+  const [tempName,       setTempName]       = useState(userName);
+  const [tempAvatar,     setTempAvatar]     = useState(userAvatar);
   const [notification,   setNotification]   = useState(null);
 
   useEffect(() => { save("eq_points",       myPoints);       }, [myPoints]);
@@ -230,18 +179,19 @@ export default function EcoQuest() {
   useEffect(() => { save("eq_recycle",      recycleCount);  }, [recycleCount]);
   useEffect(() => { save("eq_invasora",     invasoraCount); }, [invasoraCount]);
   useEffect(() => { save("eq_achievements", unlockedAch);   }, [unlockedAch]);
-  useEffect(() => { save("eq_markers",      plantMarkers);  }, [plantMarkers]);
   useEffect(() => { save("eq_username",      userName);      }, [userName]);
   useEffect(() => { save("eq_avatar",       userAvatar);    }, [userAvatar]);
-  useEffect(() => { save("eq_loc_perm",      locationPerm);  }, [locationPerm]);
+  useEffect(() => { save("eq_usercode",     userCode);      }, [userCode]);
+  useEffect(() => { save("eq_leagues",      myLeagues);     }, [myLeagues]);
 
+  // Detector automático de logros fijos
   useEffect(() => {
     ACHIEVEMENTS.forEach(ach => {
       if (!unlockedAch.includes(ach.id) && ach.check(plantCount, recycleCount, invasoraCount)) {
         setUnlockedAch(prev => {
           if (prev.includes(ach.id)) return prev;
           setMyPoints(pts => pts + ach.bonus);
-          showNotif(`¡Logro: ${ach.title}! (+${ach.bonus} pts)`, ach.emoji);
+          showNotif(`¡Logro Unlocked: ${ach.title}! (+${ach.bonus} pts)`, ach.emoji);
           return [...prev, ach.id];
         });
       }
@@ -252,22 +202,11 @@ export default function EcoQuest() {
     setMyPoints(prev => prev + pts);
     showNotif(`+${pts} pts — ${label}`, emoji);
   };
+
   const showNotif = (msg, emoji) => {
     setNotification({ msg, emoji });
     setTimeout(() => setNotification(null), 3500);
   };
-
-  const requestLocation = useCallback(() => {
-    return new Promise((resolve) => {
-      if (locationPerm === "denied") { resolve(null); return; }
-      if (!navigator.geolocation) { resolve(null); return; }
-      navigator.geolocation.getCurrentPosition(
-        pos => { setLocationPerm("granted"); resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }); },
-        ()  => { setLocationPerm("denied");  resolve(null); },
-        { timeout: 8000 }
-      );
-    });
-  }, [locationPerm]);
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -275,8 +214,6 @@ export default function EcoQuest() {
     setPreviewUrl(URL.createObjectURL(file));
     setScanning(true);
     setResult(null);
-
-    const location = await requestLocation();
 
     try {
       const formData = new FormData();
@@ -287,7 +224,7 @@ export default function EcoQuest() {
         body: formData,
       });
       if (!res.ok) {
-        setResult({ type: "error", message: `Error iNaturalist (${res.status}). Intenta de nuevo.` });
+        setResult({ type: "error", message: `Error de servidor iNaturalist (${res.status}).` });
         setScanning(false);
         return;
       }
@@ -309,39 +246,30 @@ export default function EcoQuest() {
           status:     isInvasora ? "Invasora" : "Autóctona",
           points:     pts,
           confidence: score > 70 ? "Alta" : score > 40 ? "Media" : "Baja",
-          score,
           inatImage:  taxon.default_photo?.medium_url || null,
-          taxonId:    taxon.id,
           family:     familyName,
           observations: taxon.observations_count || 0,
           wikiInfo:   null,
-          taxonDetails: null,
         };
 
         setResult(parsed);
         setScanning(false);
 
-        if (location) {
-          setPlantMarkers(prev => [...prev, { lat: location.lat, lng: location.lng, name, scientific, date: new Date().toLocaleDateString("es-ES") }]);
-        }
         setPlantCount(prev => ({ ...prev, [name]: (prev[name] || 0) + 1 }));
         if (isInvasora) setInvasoraCount(c => c + 1);
         addPoints(pts, name, "🌿");
 
         setLoadingInfo(true);
-        const [wikiInfo, taxonDetails] = await Promise.all([
-          fetchWikiInfo(scientific, name, familyName),
-          fetchInatTaxonDetails(taxon.id),
-        ]);
-        setResult(prev => prev ? { ...prev, wikiInfo, taxonDetails } : prev);
+        const wikiInfo = await fetchWikiInfo(scientific, name, familyName);
+        setResult(prev => prev ? { ...prev, wikiInfo } : prev);
         setLoadingInfo(false);
 
       } else {
-        setResult({ type: "none", message: "No se detectó ninguna planta. Intenta con otra foto con mejor luz." });
+        setResult({ type: "none", message: "No se detectó ninguna planta clara en la fotografía." });
         setScanning(false);
       }
     } catch (err) {
-      setResult({ type: "error", message: "Error de red. Comprueba tu conexión." });
+      setResult({ type: "error", message: "Error de conexión con la red." });
       setScanning(false);
     }
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -352,6 +280,26 @@ export default function EcoQuest() {
     addPoints(item.points, `Reciclé ${item.label}`, item.emoji);
   };
 
+  const handleSaveProfile = () => {
+    if(tempName.trim()) setUserName(tempName.trim());
+    setUserAvatar(tempAvatar);
+    setEditingProfile(false);
+    showNotif("Perfil guardado correctamente", "👤");
+  };
+
+  const handleJoinLeague = (e) => {
+    e.preventDefault();
+    if(!leagueInput.trim()) return;
+    const name = leagueInput.trim();
+    if(myLeagues.includes(name)) {
+      showNotif("Ya estás en esta liga", "⚠️");
+    } else {
+      setMyLeagues(prev => [...prev, name]);
+      showNotif(`Te has unido a: ${name}`, "🛡️");
+    }
+    setLeagueInput("");
+  };
+
   const uniquePlants  = Object.keys(plantCount).length;
   const totalRecycled = Object.values(recycleCount).reduce((a, b) => a + b, 0);
   const currentRank   = getRank(myPoints);
@@ -359,202 +307,107 @@ export default function EcoQuest() {
   const rankProgress  = nextRank ? ((myPoints - currentRank.min) / (nextRank.min - currentRank.min)) * 100 : 100;
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg,#0a1628 0%,#0d2218 50%,#0a1628 100%)", fontFamily: "system-ui, sans-serif", color: "#e8f5e9", position: "relative", overflow: "hidden" }}>
-      <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0 }}>
-        {[...Array(18)].map((_, i) => (
-          <div key={i} style={{ position: "absolute", width: 3+(i%4)*2, height: 3+(i%4)*2, borderRadius: "50%", background: i%3===0?"#4ade8044":i%3===1?"#86efac22":"#22d3ee22", left: ((i*37+10)%95)+"%", top: ((i*53+7)%90)+"%", animation: `float ${3+i%4}s ease-in-out infinite alternate`, animationDelay: (i*0.3)+"s" }} />
-        ))}
-      </div>
-
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes float   { from{transform:translateY(0)} to{transform:translateY(-12px)} }
-        @keyframes slideIn { from{transform:translateY(-50px) scale(.85);opacity:0} to{transform:translateY(0) scale(1);opacity:1} }
-        @keyframes fadeUp  { from{transform:translateY(16px);opacity:0} to{transform:translateY(0);opacity:1} }
-        @keyframes spin    { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        @keyframes pulse   { 0%,100%{opacity:1} 50%{opacity:.4} }
-        .card-tap:active   { transform:scale(.96) }
-      `}} />
-
+    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg,#07121e 0%,#091b13 50%,#07121e 100%)", fontFamily: "system-ui, sans-serif", color: "#e8f5e9", position: "relative", paddingBottom: 120 }}>
+      
       {notification && (
-        <div style={{ position:"fixed", top:20, left:"50%", transform:"translateX(-50%)", background:"linear-gradient(135deg,#16a34a,#0d9488)", color:"white", borderRadius:50, padding:"12px 24px", fontWeight:"bold", fontSize:14, zIndex:9999, boxShadow:"0 8px 32px #4ade8055", animation:"slideIn .3s ease", display:"flex", alignItems:"center", gap:10, maxWidth:"90vw" }}>
-          <span style={{ fontSize:20 }}>{notification.emoji}</span>
-          <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{notification.msg}</span>
+        <div style={{ position:"fixed", top:20, left:"50%", transform:"translateX(-50%)", background:"linear-gradient(135deg,#16a34a,#0d9488)", color:"white", borderRadius:50, padding:"12px 24px", fontWeight:"bold", fontSize:14, zIndex:9999, boxShadow:"0 8px 24px rgba(22,163,74,0.4)", animation:"slideIn .3s ease", display:"flex", alignItems:"center", gap:10, maxWidth:"90vw" }}>
+          <span style={{ fontSize:18 }}>{notification.emoji}</span>
+          <span>{notification.msg}</span>
         </div>
       )}
 
-      <div style={{ maxWidth:480, margin:"0 auto", padding:"0 0 110px", position:"relative", zIndex:1 }}>
-
-        {/* HEADER */}
-        <div style={{ padding:"28px 24px 16px", textAlign:"center" }}>
-          <div style={{ fontSize:11, letterSpacing:4, color:"#4ade80", textTransform:"uppercase", marginBottom:6 }}>Proyecto</div>
-          <div style={{ fontSize:40, fontWeight:"900", letterSpacing:-1, lineHeight:1, background:"linear-gradient(135deg,#4ade80,#22d3ee)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>🌿 EcoQuest</div>
-          <div style={{ fontSize:12, color:"#86efac55", marginTop:4 }}>Identifica · Recicla · Compite</div>
-        </div>
-
-        {/* STATS */}
-        <div style={{ margin:"0 20px 16px", display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10 }}>
-          {[
-            { label:"Puntos",    val:myPoints,   emoji:"⭐", color:"#fbbf24" },
-            { label:"Especies",  val:uniquePlants,  emoji:"🌿", color:"#4ade80" },
-            { label:"Reciclado", val:totalRecycled, emoji:"♻️", color:"#22d3ee" },
-          ].map(s => (
-            <div key={s.label} style={{ background:"rgba(255,255,255,0.05)", borderRadius:14, padding:"12px 6px", textAlign:"center", border:"1px solid rgba(255,255,255,0.07)" }}>
-              <div style={{ fontSize:18 }}>{s.emoji}</div>
-              <div style={{ fontSize:20, fontWeight:"800", color:s.color }}>{s.val}</div>
-              <div style={{ fontSize:9, color:"#86efac66", marginTop:1 }}>{s.label}</div>
+      <div style={{ maxWidth:480, margin:"0 auto" }}>
+        
+        {/* TOP BAR / USER RESUMEN */}
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"20px 20px 10px" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+            <span style={{ fontSize:32, background:"rgba(255,255,255,0.08)", borderRadius:"50%", padding:6, width:44, height:44, display:"flex", alignItems:"center", justifyValue:"center" }}>{userAvatar}</span>
+            <div>
+              <div style={{ fontSize:14, fontWeight:"bold", color:"#fff" }}>{userName}</div>
+              <div style={{ fontSize:11, color:currentRank.color, fontWeight:"600" }}>{currentRank.emoji} Rango {currentRank.name}</div>
             </div>
-          ))}
-        </div>
-
-        {/* RANGO MINI */}
-        <div style={{ margin:"0 20px 20px", background:`linear-gradient(135deg,${currentRank.color}18,${currentRank.color}08)`, borderRadius:16, padding:"12px 16px", border:`1px solid ${currentRank.color}44`, display:"flex", alignItems:"center", gap:12 }}>
-          <div style={{ fontSize:28 }}>{currentRank.emoji}</div>
-          <div style={{ flex:1 }}>
-            <div style={{ fontSize:13, fontWeight:"700", color:currentRank.color }}>{currentRank.name}</div>
-            {nextRank ? (
-              <>
-                <div style={{ height:5, background:"rgba(255,255,255,0.1)", borderRadius:3, marginTop:6 }}>
-                  <div style={{ height:"100%", borderRadius:3, width:`${Math.min(rankProgress,100)}%`, background:`linear-gradient(90deg,${currentRank.color},${nextRank.color})`, transition:"width .6s ease" }} />
-                </div>
-                <div style={{ fontSize:10, color:"#86efac55", marginTop:3 }}>{myPoints} / {nextRank.min} pts para {nextRank.emoji} {nextRank.name}</div>
-              </>
-            ) : (
-              <div style={{ fontSize:11, color:currentRank.color, marginTop:4 }}>¡Rango máximo! 🏆</div>
-            )}
+          </div>
+          <div style={{ background:"rgba(251,191,36,0.12)", border:"1px solid rgba(251,191,36,0.3)", borderRadius:12, padding:"6px 12px", textAlign:"right" }}>
+            <div style={{ fontSize:10, color:"#fbbf24", fontWeight:"bold" }}>PUNTOS TOTALES</div>
+            <div style={{ fontSize:16, fontWeight:"900", color:"#fbbf24" }}>⭐ {myPoints}</div>
           </div>
         </div>
 
-        {/* TABS */}
-        <div style={{ display:"flex", margin:"0 20px 22px", background:"rgba(0,0,0,0.35)", borderRadius:16, padding:4, gap:3 }}>
-          {[
-            { id:"scan",         label:"📸", title:"Plantas"  },
-            { id:"recycle",      label:"♻️", title:"Reciclar" },
-            { id:"achievements", label:"🏆", title:"Logros"   },
-            { id:"map",          label:"🗺️", title:"Mapa"     },
-            { id:"profile",      label:"👤", title:"Perfil"   },
-          ].map(t => (
-            <button key={t.id} className="card-tap" onClick={() => setTab(t.id)} style={{ flex:1, padding:"9px 2px 6px", borderRadius:12, border:"none", background:tab===t.id?"linear-gradient(135deg,#16a34a,#0d9488)":"transparent", color:tab===t.id?"white":"#86efac77", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:2, boxShadow:tab===t.id?"0 4px 12px #16a34a44":"none" }}>
-              <span style={{ fontSize:16 }}>{t.label}</span>
-              <span style={{ fontSize:9, fontWeight:tab===t.id?"700":"400" }}>{t.title}</span>
-            </button>
-          ))}
+        {/* LOGO DE LA APP */}
+        <div style={{ textAlign:"center", padding:"10px 0 20px" }}>
+          <div style={{ fontSize:32, fontWeight:"900", letterSpacing:-1, background:"linear-gradient(135deg,#4ade80,#22d3ee)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>🌿 EcoQuest</div>
         </div>
 
-        {/* ══════════ TAB SCAN ══════════ */}
+        {/* ════════════════ TAB CONTENIDOS ════════════════ */}
+        
+        {/* 1. COMPONENTE SCAN (PLANTAS) */}
         {tab==="scan" && (
-          <div style={{ padding:"0 20px" }}>
-            <div onClick={() => fileInputRef.current?.click()} style={{ background:"rgba(255,255,255,0.03)", borderRadius:24, padding:28, border:"2px dashed rgba(74,222,128,0.3)", textAlign:"center", marginBottom:20, cursor:"pointer" }}>
+          <div style={{ padding:"0 20px", animation:"fadeUp .3s ease" }}>
+            <div onClick={() => fileInputRef.current?.click()} style={{ background:"rgba(255,255,255,0.02)", borderRadius:24, padding:30, border:"2px dashed rgba(74,222,128,0.25)", textAlign:"center", marginBottom:20, cursor:"pointer" }}>
               <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handlePhotoUpload} style={{ display:"none" }} />
               {scanning ? (
                 <>
-                  {previewUrl && <img src={previewUrl} alt="" style={{ width:"100%", maxHeight:160, objectFit:"cover", borderRadius:14, marginBottom:14, opacity:.6 }} />}
-                  <div style={{ fontSize:44, animation:"spin 1s linear infinite", display:"inline-block" }}>🔍</div>
-                  <div style={{ marginTop:12, color:"#4ade80", fontSize:14 }}>Identificando especie...</div>
-                  <div style={{ fontSize:11, color:"#86efac55", marginTop:4 }}>iNaturalist · base de datos global</div>
-                </>
-              ) : result?.type==="plant" && previewUrl ? (
-                <>
-                  <img src={previewUrl} alt="" style={{ width:"100%", maxHeight:150, objectFit:"cover", borderRadius:14, marginBottom:10 }} />
-                  <div style={{ fontSize:12, color:"#4ade80" }}>📸 Toca para analizar otra foto</div>
+                  <div style={{ fontSize:40, animation:"spin 1.5s linear infinite", display:"inline-block" }}>🧬</div>
+                  <div style={{ marginTop:12, color:"#4ade80", fontSize:14, fontWeight:"600" }}>Analizando taxonomía vegetal...</div>
                 </>
               ) : (
                 <>
-                  <div style={{ fontSize:52 }}>📸</div>
-                  <div style={{ fontSize:16, fontWeight:"700", color:"#4ade80", marginTop:10 }}>Fotografía una planta</div>
-                  <div style={{ fontSize:12, color:"#86efac77", marginTop:5 }}>Identificación inteligente</div>
-                  <div style={{ marginTop:14, display:"inline-block", background:"linear-gradient(135deg,#16a34a,#0d9488)", color:"white", borderRadius:50, padding:"9px 26px", fontSize:13, fontWeight:"700" }}>Abrir cámara</div>
+                  <div style={{ fontSize:48 }}>📸</div>
+                  <div style={{ fontSize:15, fontWeight:"bold", color:"#4ade80", marginTop:10 }}>Fotografiar Planta / Árbol</div>
+                  <div style={{ fontSize:11, color:"#86efac55", marginTop:4 }}>Identificación asistida por iNaturalist</div>
                 </>
               )}
             </div>
 
             {result?.type==="plant" && (
-              <div style={{ background:"linear-gradient(135deg,rgba(22,163,74,0.1),rgba(13,148,136,0.1))", borderRadius:22, padding:20, border:"1px solid rgba(74,222,128,0.25)", marginBottom:20, animation:"fadeUp .4s ease" }}>
-                <div style={{ display:"flex", gap:14, marginBottom:18 }}>
-                  {result.inatImage
-                    ? <img src={result.inatImage} alt="" style={{ width:64, height:64, borderRadius:14, objectFit:"cover", flexShrink:0 }} />
-                    : <div style={{ fontSize:48, flexShrink:0 }}>🌿</div>
-                  }
-                  <div style={{ flex:1 }}>
-                    <div style={{ display:"flex", flexWrap:"wrap", alignItems:"center", gap:8 }}>
-                      <div style={{ fontSize:18, fontWeight:"800" }}>{result.name}</div>
-                      <span style={{ background:(STATUS_COLORS[result.status]||"#888")+"33", color:STATUS_COLORS[result.status]||"#888", borderRadius:50, padding:"2px 10px", fontSize:10, fontWeight:"700" }}>{result.status}</span>
-                    </div>
-                    <div style={{ fontSize:11, color:"#86efac77", fontStyle:"italic", marginTop:2 }}>{result.scientific}</div>
-                    <div style={{ display:"flex", gap:8, marginTop:6, flexWrap:"wrap" }}>
-                      <span style={{ fontSize:11, color:"#fbbf24" }}>🌍 {result.origin}</span>
-                      <span style={{ fontSize:11, color:"#fbbf24" }}>⭐ +{result.points} pts</span>
-                    </div>
+              <div style={{ background:"rgba(255,255,255,0.03)", borderRadius:20, padding:20, border:"1px solid rgba(255,255,255,0.06)", marginBottom:20 }}>
+                <div style={{ display:"flex", gap:14, marginBottom:16 }}>
+                  {result.inatImage ? (
+                    <img src={result.inatImage} alt="" style={{ width:60, height:60, borderRadius:12, objectFit:"cover" }} />
+                  ) : <div style={{ fontSize:40 }}>🌱</div>}
+                  <div>
+                    <div style={{ fontSize:18, fontWeight:"800", color:"#fff" }}>{result.name}</div>
+                    <div style={{ fontSize:12, color:"#86efac77", fontStyle:"italic" }}>{result.scientific}</div>
+                    <div style={{ marginTop:4 }}><span style={{ background:"rgba(74,222,128,0.15)", color:"#4ade80", fontSize:10, padding:"2px 8px", borderRadius:50, fontWeight:"bold" }}>{result.status}</span></div>
                   </div>
                 </div>
 
-                <div style={{ fontSize:13, fontWeight:"bold", color:"#4ade80", letterSpacing:1, marginBottom:10, textTransform:"uppercase" }}>📋 Guía de Cuidados y Datos</div>
-                
                 {loadingInfo ? (
-                  <div style={{ textAlign:"center", padding:"14px 0", color:"#4ade8077", fontSize:12, animation:"pulse 1.5s infinite" }}>
-                    📖 Analizando datos botánicos...
-                  </div>
+                  <div style={{ fontSize:12, color:"#86efac66", textAlign:"center", padding:10 }}>Buscando especificaciones y curiosidades...</div>
                 ) : result.wikiInfo ? (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 16 }}>
-                    <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 12, padding: "10px 14px", borderLeft: "4px solid #4ade80" }}>
-                      <span style={{ color: "#86efac", fontSize: 11, fontWeight: "bold", display: "block" }}>🍁 TIPO DE HOJA</span>
-                      <span style={{ fontSize: 13, color: "#fff" }}>{result.wikiInfo.leafType}</span>
+                  <div>
+                    <div style={{ fontSize:12, color:"#4ade80", fontWeight:"bold", marginBottom:8, letterSpacing:0.5 }}>📋 FICHA DE CUIDADOS</div>
+                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:14 }}>
+                      <div style={{ background:"rgba(255,255,255,0.02)", padding:8, borderRadius:8, fontSize:11 }}>
+                        <span style={{ color:"#86efac", display:"block", fontWeight:"bold", fontSize:9 }}>RIEGO</span> {result.wikiInfo.watering.split("(")[0]}
+                      </div>
+                      <div style={{ background:"rgba(255,255,255,0.02)", padding:8, borderRadius:8, fontSize:11 }}>
+                        <span style={{ color:"#a78bfa", display:"block", fontWeight:"bold", fontSize:9 }}>FLORACIÓN</span> {result.wikiInfo.flowering}
+                      </div>
                     </div>
-                    <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 12, padding: "10px 14px", borderLeft: "4px solid #a78bfa" }}>
-                      <span style={{ color: "#c084fc", fontSize: 11, fontWeight: "bold", display: "block" }}>🌸 ÉPOCA DE FLORACIÓN</span>
-                      <span style={{ fontSize: 13, color: "#fff" }}>{result.wikiInfo.flowering}</span>
-                    </div>
-                    <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 12, padding: "10px 14px", borderLeft: "4px solid #22d3ee" }}>
-                      <span style={{ color: "#22d3ee", fontSize: 11, fontWeight: "bold", display: "block" }}>💧 FRECUENCIA DE RIEGO</span>
-                      <span style={{ fontSize: 13, color: "#fff" }}>{result.wikiInfo.watering}</span>
-                    </div>
-                    <div style={{ background: "rgba(251,191,36,0.06)", borderRadius: 12, padding: "12px 14px", border: "1px dashed rgba(251,191,36,0.3)" }}>
-                      <span style={{ color: "#fbbf24", fontSize: 11, fontWeight: "bold", display: "block", marginBottom: 2 }}>✨ CARACTERÍSTICA DESTACADA</span>
-                      <p style={{ fontSize: 13, color: "#e8f5e9", margin: 0, lineHeight: 1.5, fontStyle: "italic" }}>"{result.wikiInfo.feature}"</p>
-                    </div>
-                    {result.wikiInfo.wikiUrl && (
-                      <a href={result.wikiInfo.wikiUrl} target="_blank" rel="noopener noreferrer" style={{ display:"inline-block", alignSelf: "flex-start", marginTop:4, fontSize:11, color:"#86efac", textDecoration:"none", background:"rgba(74,222,128,0.1)", borderRadius:50, padding:"4px 12px" }}>
-                        Ver artículo completo →
-                      </a>
-                    )}
-                  </div>
-                ) : (
-                  <div style={{ background:"rgba(255,255,255,0.04)", borderRadius:14, padding:"12px 14px", fontSize:12, color:"#86efac66", textAlign:"center", marginBottom: 16 }}>
-                    No se han podido procesar los cuidados automáticos para esta especie.
-                  </div>
-                )}
 
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
-                  {result.family && (
-                    <div style={{ background:"rgba(255,255,255,0.02)", borderRadius:10, padding:"8px 10px" }}>
-                      <div style={{ fontSize:9, color:"#86efac66", fontWeight:"700" }}>FAMILIA</div>
-                      <div style={{ fontSize:11, color:"#cce5cc" }}>{result.family}</div>
+                    {/* ── APARTADO SOLICITADO: CURIOSIDADES ── */}
+                    <div style={{ background:"linear-gradient(135deg,rgba(34,211,238,0.08),rgba(74,222,128,0.04))", padding:"12px 14px", borderRadius:14, border:"1px solid rgba(34,211,238,0.2)", marginBottom:10 }}>
+                      <div style={{ fontSize:12, color:"#22d3ee", fontWeight:"bold", marginBottom:6, display:"flex", alignItems:"center", gap:4 }}>💡 CURIOSIDADES BOTÁNICAS</div>
+                      {result.wikiInfo.curiosities.map((cur, idx) => (
+                        <div key={idx} style={{ fontSize:12, lineHeight:1.4, color:"#e8f5e9", marginBottom:idx===0?6:0, paddingLeft:10, position:"relative" }}>
+                          <span style={{ position:"absolute", left:0, color:"#22d3ee" }}>•</span> {cur}
+                        </div>
+                      ))}
                     </div>
-                  )}
-                  {result.observations > 0 && (
-                    <div style={{ background:"rgba(255,255,255,0.02)", borderRadius:10, padding:"8px 10px" }}>
-                      <div style={{ fontSize:9, color:"#86efac66", fontWeight:"700" }}>REGISTROS GLOBALES</div>
-                      <div style={{ fontSize:11, color:"#cce5cc" }}>{result.observations.toLocaleString()}</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {result && (result.type==="none"||result.type==="error") && (
-              <div style={{ background:"rgba(248,113,113,0.08)", borderRadius:18, padding:18, border:"1px solid rgba(248,113,113,0.25)", textAlign:"center", marginBottom:18 }}>
-                <div style={{ fontSize:30 }}>{result.type==="none"?"🔎":"⚠️"}</div>
-                <div style={{ color:"#fca5a5", marginTop:8, fontSize:13 }}>{result.message}</div>
+                  </div>
+                ) : null}
               </div>
             )}
 
             {uniquePlants > 0 && (
-              <div style={{ marginTop:4 }}>
-                <div style={{ fontSize:10, letterSpacing:3, color:"#86efac55", textTransform:"uppercase", marginBottom:10 }}>Especies encontradas ({uniquePlants})</div>
-                <div style={{ display:"flex", flexWrap:"wrap", gap:7 }}>
-                  {Object.entries(plantCount).map(([name, count]) => (
-                    <div key={name} style={{ background:"rgba(74,222,128,0.1)", borderRadius:50, padding:"5px 12px", fontSize:11, color:"#4ade80", border:"1px solid rgba(74,222,128,0.2)", display:"flex", alignItems:"center", gap:5 }}>
-                      {name}{count>1&&<span style={{ background:"rgba(74,222,128,0.2)", borderRadius:50, padding:"1px 6px", fontSize:10 }}>x{count}</span>}
-                    </div>
+              <div>
+                <div style={{ fontSize:11, color:"#86efac55", fontWeight:"bold", marginBottom:8 }}>COLECCIÓN DE ESPECIES ESCANEADAS ({uniquePlants})</div>
+                <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+                  {Object.entries(plantCount).map(([name, qty]) => (
+                    <span key={name} style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:50, padding:"4px 12px", fontSize:12, color:"#fff" }}>
+                      🌿 {name} <b style={{ color:"#4ade80" }}>x{qty}</b>
+                    </span>
                   ))}
                 </div>
               </div>
@@ -562,37 +415,208 @@ export default function EcoQuest() {
           </div>
         )}
 
-        {/* ══════════ TAB RECICLAR ══════════ */}
+        {/* 2. COMPONENTE RECICLAJE */}
         {tab==="recycle" && (
-          <div style={{ padding:"0 20px" }}>
-            <div style={{ fontSize:10, letterSpacing:3, color:"#86efac55", textTransform:"uppercase", marginBottom:14 }}>Toca lo que reciclas</div>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+          <div style={{ padding:"0 20px", animation:"fadeUp .3s ease" }}>
+            <div style={{ fontSize:11, color:"#86efac55", fontWeight:"bold", marginBottom:12 }}>REGISTRA TUS ACCIONES DE RECICLAJE</div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
               {RECYCLE_ITEMS.map(item => (
-                <div key={item.id} className="card-tap" onClick={() => handleRecycle(item)} style={{ background:"rgba(255,255,255,0.04)", borderRadius:20, padding:"20px 14px", textAlign:"center", border:`1px solid ${item.color}44`, cursor:"pointer" }}>
-                  <div style={{ fontSize:38 }}>{item.emoji}</div>
-                  <div style={{ fontSize:14, fontWeight:"700", marginTop:10, color:item.color }}>{item.label}</div>
-                  <div style={{ fontSize:11, color:"#86efac77", marginTop:4 }}>+{item.points} pts</div>
-                  {recycleCount[item.id]>0 && <div style={{ marginTop:8, background:item.color+"22", borderRadius:50, padding:"2px 10px", display:"inline-block", fontSize:11, color:item.color, fontWeight:"700" }}>x{recycleCount[item.id]}</div>}
+                <div key={item.id} onClick={() => handleRecycle(item)} style={{ background:"rgba(255,255,255,0.03)", border:`1px solid ${item.color}33`, borderRadius:16, padding:16, textAlign:"center", cursor:"pointer", transition:"transform 0.2s" }}>
+                  <div style={{ fontSize:32 }}>{item.emoji}</div>
+                  <div style={{ fontSize:13, fontWeight:"bold", color:item.color, marginTop:4 }}>{item.label}</div>
+                  <div style={{ fontSize:11, color:"#86efac55" }}>+{item.points} pts</div>
+                  {recycleCount[item.id] > 0 && (
+                    <div style={{ marginTop:6, background:`${item.color}22`, color:item.color, fontSize:11, fontWeight:"bold", padding:"2px 8px", borderRadius:50, display:"inline-block" }}>
+                      Procesados: {recycleCount[item.id]}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
-            {Object.keys(recycleCount).length > 0 && (
-              <div style={{ marginTop: 20, background: "rgba(255,255,255,0.02)", padding: 15, borderRadius: 14 }}>
-                <span style={{ fontSize: 12, color: "#86efac77", display: "block", marginBottom: 8 }}>RESUMEN RECICLAJE</span>
-                {Object.entries(recycleCount).map(([id, val]) => {
-                  const rItem = RECYCLE_ITEMS.find(i => i.id === id);
-                  return val > 0 ? (
-                    <div key={id} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, padding: "4px 0" }}>
-                      <span>{rItem?.emoji} {rItem?.label}</span>
-                      <span style={{ fontWeight: "bold", color: rItem?.color }}>{val} uds</span>
-                    </div>
-                  ) : null;
-                })}
-              </div>
-            )}
           </div>
         )}
+
+        {/* 3. COMPONENTE LOGROS Y RETOS SEMANALES */}
+        {tab==="achievements" && (
+          <div style={{ padding:"0 20px", animation:"fadeUp .3s ease" }}>
+            
+            {/* RETOS SEMANALES */}
+            <div style={{ marginBottom:22 }}>
+              <div style={{ fontSize:12, color:"#22d3ee", fontWeight:"bold", marginBottom:10, letterSpacing:1 }}>📅 RETOS DE LA SEMANA</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                {WEEKLY_CHALLENGES.map(w => {
+                  const currentProgress = w.id === "w_1" ? (recycleCount["glass"] || 0) : uniquePlants;
+                  const isDone = currentProgress >= w.target;
+                  return (
+                    <div key={w.id} style={{ background:"linear-gradient(135deg,rgba(34,211,238,0.08),transparent)", border:"1px solid rgba(34,211,238,0.15)", borderRadius:16, padding:14, display:"flex", alignItems:"center", gap:12 }}>
+                      <span style={{ fontSize:28 }}>{w.emoji}</span>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontSize:13, fontWeight:"bold", color:"#fff" }}>{w.title}</div>
+                        <div style={{ fontSize:11, color:"#86efac77", marginTop:2 }}>{w.desc}</div>
+                        <div style={{ height:4, background:"rgba(255,255,255,0.1)", borderRadius:2, marginTop:6 }}>
+                          <div style={{ height:"100%", background:"#22d3ee", borderRadius:2, width:`${Math.min((currentProgress/w.target)*100, 100)}%` }} />
+                        </div>
+                        <div style={{ fontSize:10, color:"#22d3ee", marginTop:4 }}>Progreso: {currentProgress}/{w.target}</div>
+                      </div>
+                      <div style={{ textAlign:"center" }}>
+                        <span style={{ display:"block", fontSize:11, fontWeight:"bold", color:isDone?"#4ade80":"#fbbf24" }}>{isDone?"¡Hecho!":`+${w.bonus}`}</span>
+                        {!isDone && <span style={{ fontSize:9, color:"#fbbf24" }}>PTS</span>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* LOGROS PERMANENTES */}
+            <div>
+              <div style={{ fontSize:12, color:"#a78bfa", fontWeight:"bold", marginBottom:10, letterSpacing:1 }}>🏆 MEDALLAS Y LOGROS PERMANENTES</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                {ACHIEVEMENTS.map(ach => {
+                  const unlocked = unlockedAch.includes(ach.id);
+                  return (
+                    <div key={ach.id} style={{ background:unlocked?"rgba(167,139,250,0.06)":"rgba(255,255,255,0.01)", border:unlocked?"1px solid rgba(167,139,250,0.3)":"1px solid rgba(255,255,255,0.04)", borderRadius:14, padding:12, display:"flex", alignItems:"center", gap:12, opacity:unlocked ? 1 : 0.5 }}>
+                      <span style={{ fontSize:24, filter:unlocked?"none":"grayscale(100%)" }}>{ach.emoji}</span>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontSize:13, fontWeight:"bold", color:unlocked?"#fff":"#86efac55" }}>{ach.title}</div>
+                        <div style={{ fontSize:11, color:"#86efac55" }}>{ach.desc}</div>
+                      </div>
+                      <span style={{ fontSize:11, fontWeight:"bold", color:"#a78bfa" }}>{unlocked ? "🔒 Desbloqueado" : `+${ach.bonus} pts`}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* 4. COMPONENTE PERFIL Y LISTA DE RANGOS */}
+        {tab==="profile" && (
+          <div style={{ padding:"0 20px", animation:"fadeUp .3s ease" }}>
+            
+            {/* FICHA EDITABLE DE PERFIL */}
+            <div style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.05)", borderRadius:20, padding:20, marginBottom:20 }}>
+              {editingProfile ? (
+                <div>
+                  <div style={{ fontSize:12, color:"#4ade80", fontWeight:"bold", marginBottom:6 }}>EDITAR NOMBRE:</div>
+                  <input type="text" value={tempName} onChange={e=>setTempName(e.target.value)} style={{ width:"100%", background:"rgba(0,0,0,0.3)", border:"1px solid #4ade80", borderRadius:10, padding:"8px 12px", color:"#fff", fontSize:14, outline:"none", marginBottom:14 }} />
+                  
+                  <div style={{ fontSize:12, color:"#4ade80", fontWeight:"bold", marginBottom:6 }}>SELECCIONAR AVATAR ECOLÓGICO:</div>
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(6, 1fr)", gap:6, marginBottom:16 }}>
+                    {AVATAR_OPTIONS.map(av => (
+                      <span key={av} onClick={()=>setTempAvatar(av)} style={{ fontSize:22, padding:6, textAlign:"center", borderRadius:8, background:tempAvatar===av?"#16a34a":"rgba(255,255,255,0.03)", cursor:"pointer" }}>{av}</span>
+                    ))}
+                  </div>
+
+                  <div style={{ display:"flex", gap:8 }}>
+                    <button onClick={handleSaveProfile} style={{ flex:1, background:"linear-gradient(135deg,#16a34a,#0d9488)", border:"none", color:"#fff", padding:"8px 0", borderRadius:10, fontWeight:"bold", cursor:"pointer" }}>Guardar</button>
+                    <button onClick={()=>{setEditingProfile(false); setTempName(userName); setTempAvatar(userAvatar);}} style={{ background:"rgba(255,255,255,0.1)", border:"none", color:"#fff", padding:"8px 14px", borderRadius:10, cursor:"pointer" }}>Cancelar</button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ textAlign:"center" }}>
+                  <span style={{ fontSize:44, display:"inline-block", background:"rgba(255,255,255,0.05)", borderRadius:"50%", padding:12, marginBottom:10 }}>{userAvatar}</span>
+                  <div style={{ fontSize:18, fontWeight:"bold", color:"#fff" }}>{userName}</div>
+                  <div style={{ fontSize:11, color:"#86efac55", marginTop:2 }}>ID de Jugador: {userCode}</div>
+                  <button onClick={()=>{setEditingProfile(true); setTempName(userName); setTempAvatar(userAvatar);}} style={{ marginTop:12, background:"rgba(74,222,128,0.1)", border:"1px solid rgba(74,222,128,0.3)", color:"#4ade80", padding:"4px 14px", borderRadius:8, fontSize:12, fontWeight:"bold", cursor:"pointer" }}>✏️ Editar Perfil</button>
+                </div>
+              )}
+            </div>
+
+            {/* ESCALAFÓN COMPLETO DE RANGOS */}
+            <div>
+              <div style={{ fontSize:12, color:"#fbbf24", fontWeight:"bold", marginBottom:10, letterSpacing:0.5 }}>📈 RANGOS DISPONIBLES EN ECOQUEST</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                {RANKS.map(r => {
+                  const isCurrent = currentRank.name === r.name;
+                  return (
+                    <div key={r.name} style={{ background:isCurrent ? `${r.color}15` : "rgba(255,255,255,0.01)", border:isCurrent ? `1px solid ${r.color}` : "1px solid rgba(255,255,255,0.04)", borderRadius:14, padding:12, display:"flex", alignItems:"center", gap:12 }}>
+                      <span style={{ fontSize:24 }}>{r.emoji}</span>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontSize:13, fontWeight:"bold", color:isCurrent?"#fff":r.color, display:"flex", alignItems:"center", gap:6 }}>
+                          {r.name} {isCurrent && <span style={{ background:"#fbbf24", color:"#000", fontSize:9, padding:"1px 6px", borderRadius:4, fontWeight:"bold" }}>ACTUAL</span>}
+                        </div>
+                        <div style={{ fontSize:11, color:"#86efac55", marginTop:1 }}>{r.desc}</div>
+                      </div>
+                      <div style={{ fontSize:11, fontWeight:"bold", color:"#fff", minWidth:60, textAlign:"right" }}>{r.min} pts</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* 5. NUEVA PESTAÑA: LIGAS COMPETITIVAS */}
+        {tab === "leagues" && (
+          <div style={{ padding:"0 20px", animation:"fadeUp .3s ease" }}>
+            
+            {/* CÓDIGO PERSONAL */}
+            <div style={{ background:"linear-gradient(135deg,rgba(241,191,36,0.1),transparent)", border:"1px solid rgba(251,191,36,0.2)", borderRadius:16, padding:16, marginBottom:16, textAlign:"center" }}>
+              <div style={{ fontSize:11, color:"#fbbf24", fontWeight:"bold", letterSpacing:0.5 }}>TU CÓDIGO DE INVITACIÓN PERSONAL</div>
+              <div style={{ fontSize:22, fontWeight:"900", color:"#fff", letterSpacing:2, margin:"4px 0" }}>{userCode}</div>
+              <div style={{ fontSize:10, color:"#86efac55" }}>Compártelo con tus amigos para que se unan a tus clasificaciones.</div>
+            </div>
+
+            {/* FORMULARIO UNIRSE O CREAR */}
+            <div style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.05)", borderRadius:18, padding:16, marginBottom:20 }}>
+              <form onSubmit={handleJoinLeague}>
+                <div style={{ fontSize:12, color:"#4ade80", fontWeight:"bold", marginBottom:6 }}>CREAR O UNIRSE A UNA LIGA:</div>
+                <div style={{ display:"flex", gap:8 }}>
+                  <input type="text" placeholder="Introduce el nombre o código..." value={leagueInput} onChange={e=>setLeagueInput(e.target.value)} style={{ flex:1, background:"rgba(0,0,0,0.2)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:10, padding:"8px 12px", color:"#fff", fontSize:13, outline:"none" }} />
+                  <button type="submit" style={{ background:"linear-gradient(135deg,#16a34a,#0d9488)", border:"none", color:"#fff", padding:"0 16px", borderRadius:10, fontWeight:"bold", fontSize:12, cursor:"pointer" }}>Entrar</button>
+                </div>
+              </form>
+            </div>
+
+            {/* MIS LIGAS ACTIVAS */}
+            <div>
+              <div style={{ fontSize:12, color:"#4ade80", fontWeight:"bold", marginBottom:8 }}>MIS LIGAS ACTIVAS</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                {myLeagues.map((league, idx) => (
+                  <div key={idx} style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.05)", borderRadius:14, padding:14, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                      <span style={{ fontSize:20 }}>🛡️</span>
+                      <span style={{ fontSize:14, fontWeight:"bold", color:"#fff" }}>{league}</span>
+                    </div>
+                    <span style={{ fontSize:11, color:"#4ade80", background:"rgba(74,222,128,0.1)", padding:"2px 8px", borderRadius:4, fontWeight:"bold" }}>Tu Posición: #1</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* MENÚ DE NAVEGACIÓN INFERIOR TOTALMENTE ADAPTADO */}
+        <div style={{ position:"fixed", bottom:0, left:0, right:0, background:"rgba(7,18,30,0.92)", borderTop:"1px solid rgba(255,255,255,0.08)", backdropFilter:"blur(12px)", zIndex:999 }}>
+          <div style={{ maxWidth:480, margin:"0 auto", display:"flex", padding:"10px 10px 24px", gap:4 }}>
+            {[
+              { id:"scan",         label:"📸", title:"Plantas"  },
+              { id:"recycle",      label:"♻️", title:"Reciclar" },
+              { id:"achievements", label:"🏆", title:"Logros"   },
+              { id:"profile",      label:"👤", title:"Perfil"   },
+              { id:"leagues",      label:"🛡️", title:"Ligas"    },
+            ].map(t => (
+              <button key={t.id} onClick={() => setTab(t.id)} style={{ flex:1, padding:"8px 0 6px", borderRadius:12, border:"none", background:tab===t.id?"linear-gradient(135deg,#16a34a,#0d9488)":"transparent", color:tab===t.id?"white":"#86efac55", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:2 }}>
+                <span style={{ fontSize:18 }}>{t.label}</span>
+                <span style={{ fontSize:10, fontWeight:tab===t.id?"700":"400" }}>{t.title}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
       </div>
+
+      {/* ESTILOS CSS REUTILIZABLES */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes spin    { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        @keyframes slideIn { from{transform:translateY(-40px); opacity:0} to{transform:translateY(0); opacity:1} }
+        @keyframes fadeUp  { from{transform:translateY(12px); opacity:0} to{transform:translateY(0); opacity:1} }
+      `}} />
+
     </div>
   );
 }
