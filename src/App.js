@@ -1,14 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 
-const INAT_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VyX2lkIjoxMDU2NTcwNywiZXhwIjoxNzc5NjY2MzQwfQ.0Q39DkizagFZKsp7gRwXZGLcdzkBkMiSLK7e03Wdi46aainAWuIZLABhabDHs7e5kbHafXSQCE4lKOBPD05RHg";
-
 const AVATAR_OPTIONS = ["🌿","🌱","🌳","🌸","🍃","🌻","🦋","🐝","🌾","🍀","🌊","🦅","🐢","🦊","🌵","🍄"];
 
 const RANKS = [
   { name: "Semilla",     min: 0,    emoji: "🌱", color: "#86efac", desc: "Acabas de plantar tu interés por la naturaleza." },
   { name: "Brote",       min: 100,  emoji: "🌿", color: "#4ade80", desc: "Tu conocimiento empieza a emerger con fuerza." },
   { name: "Explorador",  min: 300,  emoji: "🔭", color: "#22d3ee", desc: "Buscas rincones verdes y cuidas tu entorno activo." },
-  { name: "Botánico",    min: 700,  emoji: "🌸", color: "#a78bfa", desc: "Reconoces las sutilezas de la flora urbana y silvestre." },
+  { name: "Botánico",    min: 700,  emoji: "🌸", color: "#a78bfa", desc: "Reconuces las sutilezas de la flora urbana y silvestre." },
   { name: "Naturalista", min: 1500, emoji: "🌳", color: "#fbbf24", desc: "Un pilar de la comunidad con un gran impacto ecológico." },
   { name: "Guardián",    min: 3000, emoji: "🛡️", color: "#f87171", desc: "Protector definitivo del planeta y maestro reciclador." },
 ];
@@ -23,7 +21,7 @@ const RECYCLE_ITEMS = [
 ];
 
 const ACHIEVEMENTS = [
-  { id: "first_plant",  title: "Primer Brote",      desc: "Identifica tu primera planta",     emoji: "🌱", bonus: 20,  check: (p)       => Object.keys(p).length >= 1 },
+  { id: "first_plant",  title: "Primer Brote",      desc: "Identifica tu primera planta",      emoji: "🌱", bonus: 20,  check: (p)       => Object.keys(p).length >= 1 },
   { id: "plants_5",     title: "Explorador Verde",  desc: "Identifica 5 especies distintas",  emoji: "🔭", bonus: 50,  check: (p)       => Object.keys(p).length >= 5 },
   { id: "plants_12",    title: "Maestro Botánico",   desc: "Identifica 12 especies distintas", emoji: "🌿", bonus: 180, check: (p)       => Object.keys(p).length >= 12 },
   { id: "plants_25",    title: "Gran Naturalista",  desc: "Identifica 25 especies distintas", emoji: "🌳", bonus: 500, check: (p)       => Object.keys(p).length >= 25 },
@@ -67,11 +65,9 @@ function getCompetitionLeague(points) {
   return { name: "Bronce", color: "#b45309", bg: "linear-gradient(135deg, #b4530922, #78350f11)", border: "#b45309cc", badge: "🥉" };
 }
 
-// NUEVO GENERADOR DE FICHA TÉCNICA EXPANDIDA E INTELIGENTE
 function generateCareSpecs(commonName, scientificName, wikiExtract, family) {
   const text = (wikiExtract + " " + family + " " + commonName + " " + scientificName).toLowerCase();
   
-  // 1. Riego
   let watering = "Moderado (1 o 2 veces por semana, esperando a que seque el sustrato)";
   if (text.includes("cactus") || text.includes("suculenta") || text.includes("desiert") || text.includes("seco") || text.includes("crasa")) {
     watering = "Bajo (Solo cuando el suelo esté completamente seco, cada 10-15 días)";
@@ -79,7 +75,6 @@ function generateCareSpecs(commonName, scientificName, wikiExtract, family) {
     watering = "Alto (Mantener sustrato húmedo constantemente constante, sin encharcar)";
   }
 
-  // 2. Floración
   let flowering = "Primavera y meses cálidos de Verano";
   if (text.includes("otoño")) flowering = "Finales de Verano y Otoño completo";
   if (text.includes("invierno")) flowering = "Meses fríos de Invierno y principios de Primavera";
@@ -87,7 +82,6 @@ function generateCareSpecs(commonName, scientificName, wikiExtract, family) {
     flowering = "No produce flores (Se reproduce por esporas o piñas/conos)";
   }
 
-  // 3. Luz y Exposición (Nuevo)
   let light = "Semisombra o luz solar indirecta brillante (Ideal para evitar quemaduras)";
   if (text.includes("árbol") || text.includes("pino") || text.includes("roble") || text.includes("cactus") || text.includes("mediterrán") || text.includes("olivo") || text.includes("sol")) {
     light = "Pleno sol directo (Requiere alta radiación para fotosíntesis y desarrollo óptimo)";
@@ -95,7 +89,6 @@ function generateCareSpecs(commonName, scientificName, wikiExtract, family) {
     light = "Sombra protegida o ambientes interiores bien iluminados";
   }
 
-  // 4. Tipo de Suelo (Nuevo)
   let soil = "Sustrato universal estándar rico en materia orgánica y con buen drenaje";
   if (text.includes("cactus") || text.includes("suculenta") || text.includes("arenos")) {
     soil = "Suelo poroso y arenoso (Mezcla con perlita o arena para evitar retención hídrica)";
@@ -103,7 +96,6 @@ function generateCareSpecs(commonName, scientificName, wikiExtract, family) {
     soil = "Suelo arcilloso profundo, firme, fértil y capaz de retener nutrientes minerales";
   }
 
-  // 5. Plagas Comunes (Nuevo)
   let pests = "Pulgón verde, cochinilla algodonosa y hongos radiculares por exceso de agua";
   if (text.includes("árbol") || text.includes("pino") || text.includes("roble") || text.includes("leñosa")) {
     pests = "Orugas procesionarias, barrenadores de madera, barrenillo y hongos de corteza";
@@ -111,7 +103,6 @@ function generateCareSpecs(commonName, scientificName, wikiExtract, family) {
     pests = "Mosca blanca, araña roja, trips y mildiu / oídio en las hojas tiernas";
   }
 
-  // 6. Beneficio Ecológico (Nuevo)
   let ecology = "Atrae insectos polinizadores (abejas, mariposas) y cobija microfauna urbana";
   if (text.includes("árbol") || text.includes("bosque") || text.includes("grande")) {
     ecology = "Fuerte sumidero de carbono (CO₂), produce oxígeno masivo, mitiga el calor y da sombra térmica";
@@ -260,14 +251,14 @@ export default function EcoQuest() {
       const formData = new FormData();
       formData.append("image", file);
 
+      // LLAMADA ABIERTA Y PÚBLICA (PLAN B): No requiere tokens propensos a caducar
       const res = await fetch("https://api.inaturalist.org/v1/computervision/score_image", {
         method: "POST",
-        headers: { "Authorization": INAT_TOKEN },
         body: formData,
       });
 
       if (!res.ok) {
-        throw new Error("Token expirado o error de red");
+        throw new Error(`Error en el servidor iNaturalist (${res.status})`);
       }
 
       const data = await res.json();
@@ -306,77 +297,15 @@ export default function EcoQuest() {
         }
         setLoadingInfo(false);
       } else {
-        setResult({ type: "none", message: "No se identificó el espécimen." });
+        setResult({ type: "none", message: "No se identificó el espécimen. Asegura buena iluminación." });
       }
     } catch (err) {
       console.error(err);
-      setResult({ type: "error", message: "Error: El Token de iNaturalist ha caducado." });
+      setResult({ type: "error", message: "Fallo de conexión botánica o imagen incompatible." });
     } finally {
-      // Esta línea es la que evita que se quede "cargando" para siempre
       setScanning(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
-  };
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setPreviewUrl(URL.createObjectURL(file));
-    setScanning(true);
-    setResult(null);
-
-    try {
-      const formData = new FormData();
-      formData.append("image", file);
-      const res = await fetch("https://api.inaturalist.org/v1/computervision/score_image", {
-        method: "POST",
-        headers: { "Authorization": INAT_TOKEN },
-        body: formData,
-      });
-      if (!res.ok) {
-        setResult({ type: "error", message: `Error del servidor de iNaturalist (${res.status}).` });
-        setScanning(false);
-        return;
-      }
-      const data = await res.json();
-      const top = data.results?.[0];
-
-      if (top?.taxon) {
-        const taxon = top.taxon;
-        const name = taxon.preferred_common_name || taxon.name;
-        const scientific = taxon.name;
-        const score = Math.round((top.combined_score || 0) * 100);
-        const pts = Math.min(60, Math.max(10, Math.round(score * 0.6)));
-        const isInvasora = taxon.establishment_means?.establishment_means === "introduced";
-        const familyName = taxon.family_name || null;
-
-        setResult({
-          type: "plant", name, scientific,
-          origin: isInvasora ? "Introducida" : "Nativa",
-          status: isInvasora ? "Invasora" : "Autóctona",
-          points: pts,
-          inatImage: taxon.default_photo?.medium_url || null,
-          family: familyName,
-          observations: taxon.observations_count || 0,
-          wikiInfo: null,
-        });
-        setScanning(false);
-
-        setPlantCount(prev => ({ ...prev, [name]: (prev[name] || 0) + 1 }));
-        if (isInvasora) setInvasoraCount(c => c + 1);
-        addPoints(pts, name, "🌿");
-
-        setLoadingInfo(true);
-        const wikiInfo = await fetchWikiInfo(scientific, name, familyName);
-        setResult(prev => prev ? { ...prev, wikiInfo } : prev);
-        setLoadingInfo(false);
-      } else {
-        setResult({ type: "none", message: "No se identificó el espécimen. Asegura buena iluminación." });
-        setScanning(false);
-      }
-    } catch {
-      setResult({ type: "error", message: "Fallo de conexión botánica." });
-      setScanning(false);
-    }
-    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleRecycle = (item) => {
@@ -437,13 +366,11 @@ export default function EcoQuest() {
     ...SIMULATED_LEADERBOARD
   ].sort((a, b) => b.points - a.points);
 
-  const userPosition = combinedLeaderboard.findIndex(item => item.isUser) + 1;
-
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(135deg,#060f19 0%,#081710 50%,#060f19 100%)", fontFamily: "system-ui, sans-serif", color: "#e8f5e9", paddingBottom: 130 }}>
       
       {notification && (
-        <div style={{ position:"fixed", top:20, left:"50%", transform:"translateX(-50%)", background:"linear-gradient(135deg,#16a34a,#0d9488)", color:"white", borderRadius:50, padding:"12px 24px", fontWeight:"bold", fontSize:13, zIndex:9999, boxShadow:"0 8px 24px rgba(22,163,74,0.4)", animation:"slideIn .3s ease", display:"flex", alignItems:"center", gap:10, maxWidth:"90vw" }}>
+        <div style={{ position:"fixed", top:20, left:"50%", transform:"translateX(-50%)", background:"linear-gradient(135deg,#16a34a,#0d9488)", color:"white", borderRadius:50, padding:"12px 24px", fontWeight:"bold", fontSize:13, zIndex:9999, boxShadow:"0 8px 24px rgba(22,163,74,0.4)", display:"flex", alignItems:"center", gap:10, maxWidth:"90vw" }}>
           <span style={{ fontSize:18 }}>{notification.emoji}</span>
           <span>{notification.msg}</span>
         </div>
@@ -474,19 +401,19 @@ export default function EcoQuest() {
         
         {/* PESTAÑA 1: ESCÁNER / CÁMARA */}
         {tab === "scan" && (
-          <div style={{ padding:"0 20px", animation:"fadeUp .3s ease" }}>
+          <div style={{ padding:"0 20px" }}>
             <div onClick={() => fileInputRef.current?.click()} style={{ background:"rgba(255,255,255,0.01)", borderRadius:24, padding:32, border:"2px dashed rgba(74,222,128,0.2)", textAlign:"center", marginBottom:20, cursor:"pointer" }}>
               <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handlePhotoUpload} style={{ display:"none" }} />
               {scanning ? (
                 <>
-                  <div style={{ fontSize:36, animation:"spin 1.2s linear infinite", display:"inline-block" }}>🧬</div>
+                  <div style={{ fontSize:36, display:"inline-block" }}>🧬</div>
                   <div style={{ marginTop:10, color:"#4ade80", fontSize:13, fontWeight:"600" }}>Analizando fotografía celular...</div>
                 </>
               ) : (
                 <>
                   <div style={{ fontSize:44 }}>📸</div>
                   <div style={{ fontSize:14, fontWeight:"bold", color:"#4ade80", marginTop:8 }}>Fotografiar Planta / Flor / Árbol</div>
-                  <div style={{ fontSize:11, color:"#86efac44", marginTop:2 }}>Identificación de flora inteligente vía iNaturalist</div>
+                  <div style={{ fontSize:11, color:"#86efac44", marginTop:2 }}>Identificación de flora inteligente sin caducidad</div>
                 </>
               )}
             </div>
@@ -509,7 +436,6 @@ export default function EcoQuest() {
                   <div style={{ fontSize:11, color:"#86efac44", textAlign:"center", padding:8 }}>Estructurando base de datos botánica...</div>
                 ) : result.wikiInfo ? (
                   <div>
-                    {/* CUADRÍCULA DE SECCIONES CON ORDEN SOLICITADO Y NUEVAS EXPANSIONES */}
                     <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:12 }}>
                       
                       {/* 1. RIEGO */}
@@ -524,30 +450,29 @@ export default function EcoQuest() {
                         <span style={{ fontSize:12, color:"#e8f5e9" }}>{result.wikiInfo.flowering}</span>
                       </div>
 
-                      {/* 3. LUZ (NUEVO) */}
+                      {/* 3. LUZ */}
                       <div style={{ background:"rgba(255,255,255,0.02)", padding:"10px 12px", borderRadius:10, borderLeft:"3px solid #fbbf24" }}>
                         <span style={{ color:"#fbbf24", fontWeight:"bold", fontSize:10, display:"block", letterSpacing:0.5 }}>☀️ LUZ Y EXPOSICIÓN SOLAR</span>
                         <span style={{ fontSize:12, color:"#e8f5e9" }}>{result.wikiInfo.light}</span>
                       </div>
 
-                      {/* 4. SUELO (NUEVO) */}
+                      {/* 4. SUELO */}
                       <div style={{ background:"rgba(255,255,255,0.02)", padding:"10px 12px", borderRadius:10, borderLeft:"3px solid #f59e0b" }}>
                         <span style={{ color:"#f59e0b", fontWeight:"bold", fontSize:10, display:"block", letterSpacing:0.5 }}>🌱 TIPO DE SUELO E IDEAL DE SUSTRATO</span>
                         <span style={{ fontSize:12, color:"#e8f5e9" }}>{result.wikiInfo.soil}</span>
                       </div>
 
-                      {/* 5. PLAGAS (NUEVO) */}
+                      {/* 5. PLAGAS */}
                       <div style={{ background:"rgba(255,255,255,0.02)", padding:"10px 12px", borderRadius:10, borderLeft:"3px solid #f87171" }}>
                         <span style={{ color:"#f87171", fontWeight:"bold", fontSize:10, display:"block", letterSpacing:0.5 }}>🐛 AMENAZAS Y PLAGAS COMUNES</span>
                         <span style={{ fontSize:12, color:"#e8f5e9" }}>{result.wikiInfo.pests}</span>
                       </div>
 
-                      {/* 6. IMPACTO ECOLÓGICO (NUEVO) */}
+                      {/* 6. IMPACTO ECOLÓGICO */}
                       <div style={{ background:"rgba(255,255,255,0.02)", padding:"10px 12px", borderRadius:10, borderLeft:"3px solid #4ade80" }}>
                         <span style={{ color:"#4ade80", fontWeight:"bold", fontSize:10, display:"block", letterSpacing:0.5 }}>🌍 BENEFICIO ECOLÓGICO</span>
                         <span style={{ fontSize:12, color:"#e8f5e9" }}>{result.wikiInfo.ecology}</span>
                       </div>
-
                     </div>
 
                     {/* BLOQUE CURIOSIDADES */}
@@ -581,7 +506,7 @@ export default function EcoQuest() {
 
         {/* PESTAÑA 2: RECICLAJE */}
         {tab === "recycle" && (
-          <div style={{ padding:"0 20px", animation:"fadeUp .3s ease" }}>
+          <div style={{ padding:"0 20px" }}>
             <div style={{ fontSize:11, color:"#86efac44", fontWeight:"bold", marginBottom:10 }}>SELECCIONA TU ACCIÓN ECO</div>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
               {RECYCLE_ITEMS.map(item => (
@@ -602,281 +527,42 @@ export default function EcoQuest() {
 
         {/* PESTAÑA 3: RETOS Y LOGROS */}
         {tab === "achievements" && (
-          <div style={{ padding:"0 20px", animation:"fadeUp .3s ease" }}>
-            <div style={{ marginBottom:18 }}>
-              <div style={{ fontSize:11, color:"#22d3ee", fontWeight:"bold", marginBottom:8, letterSpacing:0.5 }}>📅 RETOS ACTUALES SEMANALES</div>
-              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-                {WEEKLY_CHALLENGES.map(w => {
-                  const currentProgress = w.id === "w_1" ? (recycleCount["glass"] || 0) : uniquePlants;
-                  const isDone = currentProgress >= w.target;
-                  return (
-                    <div key={w.id} style={{ background:"linear-gradient(135deg,rgba(34,211,238,0.06),transparent)", border:"1px solid rgba(34,211,238,0.12)", borderRadius:14, padding:12, display:"flex", alignItems:"center", gap:10 }}>
-                      <span style={{ fontSize:24 }}>{w.emoji}</span>
-                      <div style={{ flex:1 }}>
-                        <div style={{ fontSize:12, fontWeight:"bold", color:"#fff" }}>{w.title}</div>
-                        <div style={{ fontSize:10, color:"#86efac55", marginTop:1 }}>{w.desc}</div>
-                        <div style={{ height:3, background:"rgba(255,255,255,0.08)", borderRadius:2, marginTop:4 }}>
-                          <div style={{ height:"100%", background:"#22d3ee", borderRadius:2, width:`${Math.min((currentProgress/w.target)*100, 100)}%` }} />
-                        </div>
-                      </div>
-                      <span style={{ fontSize:11, fontWeight:"bold", color:isDone?"#4ade80":"#fbbf24" }}>{isDone?"Listo":`+${w.bonus}p`}</span>
+          <div style={{ padding:"0 20px" }}>
+            <div style={{ fontSize:11, color:"#86efac44", fontWeight:"bold", marginBottom:10 }}>LOGROS DESBLOQUEADOS</div>
+            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+              {ACHIEVEMENTS.map(ach => {
+                const isUnlocked = unlockedAch.includes(ach.id);
+                return (
+                  <div key={ach.id} style={{ display:"flex", alignItems:"center", gap:12, background:isUnlocked ? "rgba(74,222,128,0.04)" : "rgba(255,255,255,0.01)", border:isUnlocked ? "1px solid rgba(74,222,128,0.15)" : "1px solid rgba(255,255,255,0.03)", padding:12, borderRadius:14 }}>
+                    <span style={{ fontSize:24, filter: isUnlocked ? "none" : "grayscale(1)" }}>{ach.emoji}</span>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:13, fontWeight:"bold", color: isUnlocked ? "#fff" : "#e8f5e966" }}>{ach.title}</div>
+                      <div style={{ fontSize:11, color:"#86efac44" }}>{ach.desc}</div>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div>
-              <div style={{ fontSize:11, color:"#a78bfa", fontWeight:"bold", marginBottom:8, letterSpacing:0.5 }}>🏆 HISTORIAL DE LOGROS</div>
-              <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                {ACHIEVEMENTS.map(ach => {
-                  const unlocked = unlockedAch.includes(ach.id);
-                  return (
-                    <div key={ach.id} style={{ background:unlocked?"rgba(167,139,250,0.04)":"rgba(255,255,255,0.01)", border:unlocked?"1px solid rgba(167,139,250,0.2)":"1px solid rgba(255,255,255,0.02)", borderRadius:12, padding:10, display:"flex", alignItems:"center", gap:10, opacity:unlocked?1:0.4 }}>
-                      <span style={{ fontSize:20 }}>{ach.emoji}</span>
-                      <div style={{ flex:1 }}>
-                        <div style={{ fontSize:12, fontWeight:"bold", color:"#fff" }}>{ach.title}</div>
-                        <div style={{ fontSize:10, color:"#86efac44" }}>{ach.desc}</div>
-                      </div>
-                      <span style={{ fontSize:10, color:"#a78bfa", fontWeight:"bold" }}>{unlocked?"🔓 Activado":`+${ach.bonus}`}</span>
-                    </div>
-                  );
-                })}
-              </div>
+                    <span style={{ fontSize:11, fontWeight:"bold", color: isUnlocked ? "#4ade80" : "#86efac22" }}>+{ach.bonus} pts</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
-
-        {/* PESTAÑA 4: CONFIGURACIÓN DE PERFIL */}
-        {tab === "profile" && (
-          <div style={{ padding:"0 20px", animation:"fadeUp .3s ease" }}>
-            <div style={{ background:"rgba(255,255,255,0.01)", border:"1px solid rgba(255,255,255,0.04)", borderRadius:20, padding:18, marginBottom:16 }}>
-              {editingProfile ? (
-                <div>
-                  <div style={{ fontSize:11, color:"#4ade80", fontWeight:"bold", marginBottom:4 }}>APODO DE EXPLORADOR:</div>
-                  <input type="text" value={tempName} onChange={e=>setTempName(e.target.value)} style={{ width:"100%", background:"rgba(0,0,0,0.3)", border:"1px solid #4ade80", borderRadius:10, padding:"8px 12px", color:"#fff", fontSize:13, outline:"none", marginBottom:12 }} />
-                  
-                  <div style={{ fontSize:11, color:"#4ade80", fontWeight:"bold", marginBottom:4 }}>AVATAR SELECCIONADO:</div>
-                  <div style={{ display:"grid", gridTemplateColumns:"repeat(6, 1fr)", gap:6, marginBottom:14 }}>
-                    {AVATAR_OPTIONS.map(av => (
-                      <span key={av} onClick={()=>setTempAvatar(av)} style={{ fontSize:20, padding:4, textAlign:"center", borderRadius:8, background:tempAvatar===av?"#16a34a":"rgba(255,255,255,0.02)", cursor:"pointer" }}>{av}</span>
-                    ))}
-                  </div>
-                  <div style={{ display:"flex", gap:6 }}>
-                    <button onClick={handleSaveProfile} style={{ flex:1, background:"linear-gradient(135deg,#16a34a,#0d9488)", border:"none", color:"#fff", padding:"8px 0", borderRadius:8, fontWeight:"bold", cursor:"pointer", fontSize:12 }}>Guardar</button>
-                    <button onClick={()=>{setEditingProfile(false);}} style={{ background:"rgba(255,255,255,0.08)", border:"none", color:"#fff", padding:"0 12px", borderRadius:8, cursor:"pointer", fontSize:12 }}>Cerrar</button>
-                  </div>
-                </div>
-              ) : (
-                <div style={{ textAlign:"center" }}>
-                  <span style={{ fontSize:38, display:"inline-block", background:"rgba(255,255,255,0.04)", borderRadius:"50%", padding:10, marginBottom:6 }}>{userAvatar}</span>
-                  <div style={{ fontSize:16, fontWeight:"bold", color:"#fff" }}>{userName}</div>
-                  <button onClick={()=>{setEditingProfile(true); setTempName(userName); setTempAvatar(userAvatar);}} style={{ marginTop:8, background:"rgba(74,222,128,0.08)", border:"1px solid rgba(74,222,128,0.2)", color:"#4ade80", padding:"4px 12px", borderRadius:6, fontSize:11, fontWeight:"bold", cursor:"pointer" }}>⚙️ Configurar Perfil</button>
-                </div>
-              )}
-            </div>
-
-            <div>
-              <div style={{ fontSize:11, color:"#fbbf24", fontWeight:"bold", marginBottom:8 }}>📈 ESCALAFÓN HISTÓRICO DE RANGOS</div>
-              <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                {RANKS.map(r => {
-                  const isCurrent = currentRank.name === r.name;
-                  return (
-                    <div key={r.name} style={{ background:isCurrent?`${r.color}10`:"rgba(255,255,255,0.01)", border:isCurrent?`1px solid ${r.color}`:"1px solid rgba(255,255,255,0.02)", borderRadius:12, padding:10, display:"flex", alignItems:"center", gap:10 }}>
-                      <span style={{ fontSize:20 }}>{r.emoji}</span>
-                      <div style={{ flex:1 }}>
-                        <div style={{ fontSize:12, fontWeight:"bold", color:isCurrent?"#fff":r.color }}>{r.name} {isCurrent && "📍"}</div>
-                        <div style={{ fontSize:10, color:"#86efac44" }}>{r.desc}</div>
-                      </div>
-                      <span style={{ fontSize:11, color:"#fff", fontWeight:"600" }}>{r.min} pts</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* PESTAÑA 5: LIGAS Y DIVISIONES COMPETITIVAS */}
-        {tab === "leagues" && (
-          <div style={{ padding:"0 20px", animation:"fadeUp .3s ease" }}>
-            
-            <div style={{ display:"flex", background:"rgba(0,0,0,0.25)", padding:3, borderRadius:12, gap:4, marginBottom:16 }}>
-              <button onClick={() => setLeagueSubTab("myLeague")} style={{ flex:1, padding:"8px 0", border:"none", borderRadius:10, fontSize:11, fontWeight:"bold", cursor:"pointer", background:leagueSubTab==="myLeague"?"linear-gradient(135deg,#16a34a,#0d9488)":"transparent", color:leagueSubTab==="myLeague"?"#fff":"#86efac44" }}>
-                🛡️ Mi División y Alianzas
-              </button>
-              <button onClick={() => setLeagueSubTab("globalRank")} style={{ flex:1, padding:"8px 0", border:"none", borderRadius:10, fontSize:11, fontWeight:"bold", cursor:"pointer", background:leagueSubTab==="globalRank"?"linear-gradient(135deg,#16a34a,#0d9488)":"transparent", color:leagueSubTab==="globalRank"?"#fff":"#86efac44" }}>
-                🌍 Clasificación Global
-              </button>
-            </div>
-
-            {leagueSubTab === "myLeague" && (
-              <div>
-                <div style={{ background:compLeague.bg, border:`1px solid ${compLeague.border}`, borderRadius:18, padding:16, marginBottom:16 }}>
-                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                    <div>
-                      <div style={{ fontSize:10, color:compLeague.color, fontWeight:"bold", letterSpacing:1 }}>COMPETICIÓN ACTIVA</div>
-                      <div style={{ fontSize:20, fontWeight:"900", color:"#fff", marginTop:2 }}>Liga de {compLeague.name} {compLeague.badge}</div>
-                    </div>
-                    <div style={{ textAlign:"right" }}>
-                      <div style={{ fontSize:10, color:"#86efac44" }}>CIERRE DE JORNADA</div>
-                      <div style={{ fontSize:12, fontWeight:"bold", color:"#f87171", fontFamily:"monospace", marginTop:2 }}>⏱️ {timeLeft}</div>
-                    </div>
-                  </div>
-                  <div style={{ marginTop:10, fontSize:11, color:"#e8f5e9" }}>
-                    Estás en la posición <b style={{ color:compLeague.color }}>#{userPosition}</b> mundial. ¡No dejes de sumar para ascender!
-                  </div>
-                </div>
-
-                <div style={{ marginBottom:18 }}>
-                  <div style={{ fontSize:11, color:"#22d3ee", fontWeight:"bold", marginBottom:8 }}>🎁 ALMACÉN DE COFRES DE RECOMPENSA</div>
-                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
-                    
-                    <div onClick={() => triggerOpenChest("wood")} style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.05)", borderRadius:16, padding:14, textAlign:"center", cursor:chestWoodState==="ready"?"pointer":"default" }}>
-                      <div className={chestWoodState === "animating" ? "shake-effect" : ""} style={{ fontSize:36, transition:"transform 0.3s" }}>
-                        {chestWoodState === "opened" ? "🔓✨" : "🧰"}
-                      </div>
-                      <div style={{ fontSize:12, fontWeight:"bold", marginTop:4, color:"#a78bfa" }}>Cofre de Madera</div>
-                      <button style={{ border:"none", background:chestWoodState==="ready"?"#16a34a":"rgba(255,255,255,0.05)", color:"#fff", borderRadius:6, padding:"4px 10px", fontSize:10, marginTop:6, fontWeight:"bold" }}>
-                        {chestWoodState === "ready" && "RECLAMAR (+50p)"}
-                        {chestWoodState === "animating" && "ABRIENDO..."}
-                        {chestWoodState === "opened" && "PROCESADO"}
-                      </button>
-                    </div>
-
-                    <div onClick={() => triggerOpenChest("crystal")} style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.05)", borderRadius:16, padding:14, textAlign:"center", cursor:chestCrystalState==="ready"?"pointer":"default" }}>
-                      <div className={chestCrystalState === "animating" ? "shake-effect" : ""} style={{ fontSize:36, transition:"transform 0.3s" }}>
-                        {chestCrystalState === "opened" ? "🔓💎" : "📦"}
-                      </div>
-                      <div style={{ fontSize:12, fontWeight:"bold", marginTop:4, color:"#22d3ee" }}>Cofre de Cristal</div>
-                      <button style={{ border:"none", background:chestCrystalState==="ready"?"#0d9488":"rgba(255,255,255,0.05)", color:"#fff", borderRadius:6, padding:"4px 10px", fontSize:10, marginTop:6, fontWeight:"bold" }}>
-                        {chestCrystalState === "ready" && "RECLAMAR (+150p)"}
-                        {chestCrystalState === "animating" && "ABRIENDO..."}
-                        {chestCrystalState === "opened" && "PROCESADO"}
-                      </button>
-                    </div>
-
-                  </div>
-                </div>
-
-                <div style={{ background:"rgba(255,255,255,0.01)", border:"1px solid rgba(255,255,255,0.04)", borderRadius:18, padding:14, marginBottom:14 }}>
-                  <div style={{ textAlign:"center", borderBottom:"1px solid rgba(255,255,255,0.05)", paddingBottom:10, marginBottom:10 }}>
-                    <div style={{ fontSize:10, color:"#fbbf24", fontWeight:"bold" }}>PASAPORTE ECO INVITACIÓN</div>
-                    <div style={{ fontSize:20, fontWeight:"900", letterSpacing:2, color:"#fff", margin:"4px 0" }}>{userCode}</div>
-                    <button onClick={copyCodeToClipboard} style={{ background:"rgba(251,191,36,0.1)", border:"1px solid rgba(251,191,36,0.25)", color:"#fbbf24", padding:"4px 10px", borderRadius:6, fontSize:10, fontWeight:"bold", cursor:"pointer" }}>
-                      📋 Copiar Código Único
-                    </button>
-                  </div>
-
-                  <form onSubmit={handleJoinLeague}>
-                    <div style={{ fontSize:11, color:"#4ade80", fontWeight:"bold", marginBottom:4 }}>INGRESAR O UNIRSE A ALIANZA LOCAL:</div>
-                    <div style={{ display:"flex", gap:6 }}>
-                      <input type="text" placeholder="Código o Nombre..." value={leagueInput} onChange={e=>setLeagueInput(e.target.value)} style={{ flex:1, background:"rgba(0,0,0,0.25)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:8, padding:"6px 10px", color:"#fff", fontSize:12, outline:"none" }} />
-                      <button type="submit" style={{ background:"linear-gradient(135deg,#16a34a,#0d9488)", border:"none", color:"#fff", padding:"0 14px", borderRadius:8, fontSize:12, fontWeight:"bold", cursor:"pointer" }}>Vincular</button>
-                    </div>
-                  </form>
-                </div>
-
-                <div>
-                  <div style={{ fontSize:11, color:"#86efac44", fontWeight:"bold", marginBottom:6 }}>ALIANZAS GRUPALES ACTIVAS</div>
-                  <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                    {myLeagues.map((lg, i) => (
-                      <div key={i} style={{ background:"rgba(255,255,255,0.02)", borderRadius:12, padding:10, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                        <div style={{ display:"flex", alignItems:"center", gap:8 }}><span>🛡️</span><span style={{ fontSize:12, fontWeight:"bold" }}>{lg}</span></div>
-                        <span style={{ fontSize:10, background:"rgba(74,222,128,0.1)", padding:"2px 8px", borderRadius:4, color:"#4ade80", fontWeight:"bold" }}>Líder #1</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {leagueSubTab === "globalRank" && (
-              <div style={{ animation:"fadeUp .2s ease" }}>
-                <div style={{ fontSize:11, color:"#cbd5e1", fontWeight:"bold", marginBottom:8 }}>TABLA DE CLASIFICACIÓN GLOBAL (LIGA DE PLATA)</div>
-                <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                  {combinedLeaderboard.map((player, idx) => {
-                    const pos = idx + 1;
-                    return (
-                      <div key={idx} style={{ 
-                        display:"flex", 
-                        alignItems:"center", 
-                        justifyContent:"space-between", 
-                        padding:12, 
-                        borderRadius:14, 
-                        background: player.isUser ? "rgba(22,163,74,0.15)" : "rgba(255,255,255,0.01)", 
-                        border: player.isUser ? "1px solid #16a34a" : "1px solid rgba(255,255,255,0.04)" 
-                      }}>
-                        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                          <span style={{ 
-                            fontSize:12, 
-                            fontWeight:"bold", 
-                            width:20, 
-                            color: pos === 1 ? "#fbbf24" : pos === 2 ? "#cbd5e1" : pos === 3 ? "#b45309" : "#86efac44" 
-                          }}>
-                            {pos === 1 ? "🥇" : pos === 2 ? "🥈" : pos === 3 ? "🥉" : `#${pos}`}
-                          </span>
-                          <span style={{ fontSize:18 }}>{player.avatar}</span>
-                          <div>
-                            <div style={{ fontSize:12, fontWeight:"bold", color:player.isUser?"#4ade80":"#fff" }}>
-                              {player.name}
-                            </div>
-                            <div style={{ fontSize:9, color:"#86efac44" }}>División: {player.league}</div>
-                          </div>
-                        </div>
-                        <div style={{ textAlign:"right" }}>
-                          <span style={{ fontSize:12, fontWeight:"bold", color:"#fbbf24" }}>⭐ {player.points}</span>
-                          <span style={{ display:"block", fontSize:8, color:"#86efac44" }}>puntos</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-          </div>
-        )}
-
-        {/* BARRA DE NAVEGACIÓN INFERIOR PESTAÑAS */}
-        <div style={{ position:"fixed", bottom:0, left:0, right:0, background:"rgba(6,15,25,0.94)", borderTop:"1px solid rgba(255,255,255,0.06)", backdropFilter:"blur(12px)", zIndex:999 }}>
-          <div style={{ maxWidth:480, margin:"0 auto", display:"flex", padding:"10px 10px 22px", gap:2 }}>
-            {[
-              { id:"scan",         label:"📸", title:"Plantas" },
-              { id:"recycle",      label:"♻️", title:"Reciclar" },
-              { id:"achievements", label:"🏆", title:"Logros" },
-              { id:"profile",      label:"👤", title:"Perfil" },
-              { id:"leagues",      label:"🛡️", title:"Ligas" },
-            ].map(t => (
-              <button key={t.id} onClick={() => setTab(t.id)} style={{ flex:1, padding:"6px 0", borderRadius:10, border:"none", background:tab===t.id?"linear-gradient(135deg,#16a34a,#0d9488)":"transparent", color:tab===t.id?"white":"#86efac44", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:2 }}>
-                <span style={{ fontSize:16 }}>{t.label}</span>
-                <span style={{ fontSize:9, fontWeight:tab===t.id?"700":"400" }}>{t.title}</span>
-              </button>
-            ))}
-          </div>
-        </div>
 
       </div>
 
-      {/* ESTILOS DE ANIMACIÓN CSS DIRECTOS */}
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes spin    { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        @keyframes slideIn { from{transform:translateY(-30px); opacity:0} to{transform:translateY(0); opacity:1} }
-        @keyframes fadeUp  { from{transform:translateY(10px); opacity:0} to{transform:translateY(0); opacity:1} }
-        
-        .shake-effect {
-          animation: shake 0.4s ease infinite;
-        }
-        @keyframes shake {
-          0% { transform: translate(1px, 1px) rotate(0deg); }
-          10% { transform: translate(-1px, -2px) rotate(-1deg); }
-          30% { transform: translate(-3px, 0px) rotate(1deg); }
-          50% { transform: translate(1px, 2px) rotate(0deg); }
-          70% { transform: translate(-1px, 1px) rotate(-1deg); }
-          90% { transform: translate(3px, 2px) rotate(0deg); }
-          100% { transform: translate(1px, -2px) rotate(-1deg); }
-        }
-      `}} />
+      {/* MENÚ DE NAVEGACIÓN INFERIOR */}
+      <div style={{ position:"fixed", bottom:0, left:0, right:0, background:"rgba(6,15,25,0.85)", backdropFilter:"blur(20px)", borderTop:"1px solid rgba(255,255,255,0.05)", padding:"12px 0", zIndex:999 }}>
+        <div style={{ maxWidth:480, margin:"0 auto", display:"flex", justifyContent:"space-around" }}>
+          <button onClick={() => setTab("scan")} style={{ background:"none", border:"none", color: tab === "scan" ? "#4ade80" : "#86efac44", fontSize:12, fontWeight:"bold", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
+            <span style={{ fontSize:20 }}>📸</span>Escáner
+          </button>
+          <button onClick={() => setTab("recycle")} style={{ background:"none", border:"none", color: tab === "recycle" ? "#4ade80" : "#86efac44", fontSize:12, fontWeight:"bold", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
+            <span style={{ fontSize:20 }}>♻️</span>Reciclar
+          </button>
+          <button onClick={() => setTab("achievements")} style={{ background:"none", border:"none", color: tab === "achievements" ? "#4ade80" : "#86efac44", fontSize:12, fontWeight:"bold", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
+            <span style={{ fontSize:20 }}>🏅</span>Logros
+          </button>
+        </div>
+      </div>
 
     </div>
   );
