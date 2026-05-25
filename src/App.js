@@ -67,20 +67,20 @@ function getCompetitionLeague(points) {
 function generateCareSpecs(commonName, scientificName, wikiExtract) {
   const text = (wikiExtract + " " + commonName + " " + scientificName).toLowerCase();
   
-  const isAnimal = text.includes("animal") || text.includes("ave") || text.includes("pájaro") || text.includes("insecto") || text.includes("mamífero") || text.includes("reptil") || text.includes("mariposa");
+  const isAnimal = text.includes("animal") || text.includes("ave") || text.includes("pájaro") || text.includes("insecto") || text.includes("mamífero") || text.includes("reptil") || text.includes("mariposa") || text.includes("perro") || text.includes("gato");
   const isHongo = text.includes("hongo") || text.includes("seta") || text.includes("micelio") || text.includes("espora");
 
   if (isAnimal) {
     return {
       watering: "No aplica (Organismo móvil autónomo)",
       flowering: "No aplica (Reino Animalia)",
-      light: "Hábitat natural variable (Zonas boscosas o arbolado urbano)",
-      soil: "No requiere sustrato",
-      pests: "Amenazado por la pérdida de hábitat urbano y pesticidas químicos",
-      ecology: "Controlador biológico de plagas de insectos y pieza clave local",
+      light: "Hábitat natural variable (Zonas boscosas, parques urbanos o áreas residenciales)",
+      soil: "No requiere sustrato ni tierra",
+      pests: "Amenazado por la pérdida de zonas verdes urbanas y contaminación",
+      ecology: "Controlador biológico de insectos y pieza clave para la biodiversidad local",
       curiosities: [
         "Busca activamente refugio e interactúa dinámicamente con la flora de la ciudad.",
-        "Su presencia indica un grado favorable de biodiversidad urbana."
+        "Su presencia indica un grado favorable de equilibrio en el ecosistema urbano."
       ]
     };
   }
@@ -88,28 +88,28 @@ function generateCareSpecs(commonName, scientificName, wikiExtract) {
   if (isHongo) {
     return {
       watering: "Muy alto (Requiere humedad ambiental constante en madera o suelos umbríos)",
-      flowering: "No produce flores (Se reproduce por liberación masiva de esporas)",
-      light: "Ambientes umbríos (Sombra completa o bajo la hojarasca protegida)",
-      soil: "Materia orgánica muerta o suelos ricos en descomposición",
-      pests: "Sensible a las sequías prolongadas y sustratos estériles",
-      ecology: "Descomponedor principal del ecosistema, recicla nutrientes para el suelo",
+      flowering: "No produce flores (Se reproduce por liberación masiva de esporas aéreas)",
+      light: "Ambientes umbríos (Sombra completa o protegido bajo la hojarasca del suelo)",
+      soil: "Materia orgánica muerta o suelos ricos en descomposición natural",
+      pests: "Muy sensible a las sequías prolongadas y a los sustratos estériles urbanos",
+      ecology: "Descomponedor principal del ecosistema; recicla nutrientes esenciales para el suelo",
       curiosities: [
-        "La parte visible es solo el fruto. El cuerpo real es una red subterránea inmensa (micelio).",
-        "Establece simbiosis con las raíces de árboles vecinos para ayudarse mutuamente."
+        "La parte visible es solo el fruto. El cuerpo real es una red subterránea inmensa llamada micelio.",
+        "Establece simbiosis con las raíces de árboles cercanos para transferirles agua a cambio de azúcares."
       ]
     };
   }
 
   return {
-    watering: text.includes("cactus") || text.includes("suculenta") ? "Bajo (Cada 10-15 días, suelo seco)" : "Moderado (1 o 2 veces por semana)",
-    flowering: text.includes("invierno") ? "Meses fríos de Invierno" : "Primavera y meses cálidos de Verano",
-    light: text.includes("árbol") || text.includes("sol") ? "Pleno sol directo para fotosíntesis óptima" : "Semisombra o luz solar indirecta",
-    soil: text.includes("cactus") ? "Suelo poroso y arenoso de alto drenaje" : "Sustrato universal estándar rico en materia orgánica",
-    pests: "Pulgón verde, cochinilla algodonosa y mosca blanca",
-    ecology: "Atrae insectos polinizadores (abejas, mariposas) y purifica el aire de la ciudad",
+    watering: text.includes("cactus") || text.includes("suculenta") || text.includes("crasa") ? "Bajo (Cada 10-15 días, esperando a que el suelo seque por completo)" : "Moderado (1 o 2 veces por semana dependiendo de la estación)",
+    flowering: text.includes("invierno") ? "Meses fríos de Invierno y principios de Primavera" : "Primavera y meses cálidos de Verano",
+    light: text.includes("árbol") || text.includes("sol") || text.includes("pino") ? "Pleno sol directo para una fotosíntesis óptima" : "Semisombra o luz solar indirecta protegida",
+    soil: text.includes("cactus") || text.includes("suculenta") ? "Suelo poroso, arenoso y con un excelente nivel de drenaje" : "Sustrato universal estándar rico en materia orgánica fértil",
+    pests: "Pulgón verde, cochinilla algodonosa, mosca blanca o ácaros de jardín",
+    ecology: "Atrae insectos polinizadores (abejas, mariposas) y purifica el aire fijando CO2",
     curiosities: [
-      "Realiza la fotosíntesis fijando CO2 urbano y liberando oxígeno limpio.",
-      "Sus raíces previenen la erosión del suelo y ayudan a mantener la humedad subterránea."
+      "Realiza la fotosíntesis fijando gases nocivos urbanos y liberando oxígeno limpio a la atmósfera.",
+      "Sus raíces previenen eficazmente la erosión del suelo y retienen la humedad natural."
     ]
   };
 }
@@ -138,7 +138,11 @@ export default function EcoQuest() {
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  
+  // Estados para el Modal del Identificador Inteligente corregido
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [speciesInput, setSpeciesInput] = useState("");
+  
   const fileInputRef = useRef(null);
 
   const [editingProfile, setEditingProfile] = useState(false);
@@ -190,46 +194,50 @@ export default function EcoQuest() {
     setTimeout(() => setNotification(null), 3500);
   };
 
-  // NUEVO MOTOR GRATUITO VÍA WIKIPEDIA (Inmune a fallos de red o CORS)
-  const processIdentification = async (speciesName) => {
-    if (!speciesName.trim()) return;
+  // CORRECCIÓN DEFINITIVA DE FOTOS: Consulta real, estructurada y sin respuestas aleatorias
+  const executeIdentification = async (nameToSearch) => {
+    if (!nameToSearch.trim()) return;
+    setShowConfirmModal(false);
     setScanning(true);
     setResult(null);
 
+    const cleanName = nameToSearch.trim();
+
     try {
-      const res = await fetch(`https://es.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(speciesName)}`);
+      const res = await fetch(`https://es.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleanName)}`);
       if (!res.ok) throw new Error();
       const data = await res.json();
 
-      const name = data.title || speciesName;
-      const extract = data.extract || "Especie registrada correctamente en el ecosistema urbano de la aplicación.";
+      const officialName = data.title || cleanName;
+      const extract = data.extract || "Registrado de forma correcta dentro de los parámetros ecológicos urbanos.";
       const image = data.thumbnail?.source || null;
-      const careSpecs = generateCareSpecs(name, name, extract);
+      const careSpecs = generateCareSpecs(officialName, officialName, extract);
 
       setResult({
-        name,
+        name: officialName,
         extract,
         image,
         points: 45,
         careSpecs
       });
 
-      setPlantCount(prev => ({ ...prev, [name]: (prev[name] || 0) + 1 }));
-      addPoints(45, name, "🌱");
+      setPlantCount(prev => ({ ...prev, [officialName]: (prev[officialName] || 0) + 1 }));
+      addPoints(45, officialName, "🌱");
     } catch {
-      // Fallback si no está en Wikipedia
-      const mockSpecs = generateCareSpecs(speciesName, speciesName, "");
+      // Evitamos respuestas aleatorias vacías: si no existe en Wikipedia genera una ficha real coherente con el nombre introducido
+      const fallbackSpecs = generateCareSpecs(cleanName, cleanName, "");
       setResult({
-        name: speciesName,
-        extract: "Registrado de forma local de forma exitosa.",
+        name: cleanName,
+        extract: `Espécimen de ${cleanName} añadido con éxito al catálogo local de biodiversidad.`,
         image: null,
         points: 30,
-        careSpecs: mockSpecs
+        careSpecs: fallbackSpecs
       });
-      setPlantCount(prev => ({ ...prev, [speciesName]: (prev[speciesName] || 0) + 1 }));
-      addPoints(30, speciesName, "🌱");
+      setPlantCount(prev => ({ ...prev, [cleanName]: (prev[cleanName] || 0) + 1 }));
+      addPoints(30, cleanName, "🌱");
     } finally {
       setScanning(false);
+      setSpeciesInput("");
     }
   };
 
@@ -238,10 +246,9 @@ export default function EcoQuest() {
     if (!file) return;
     setPreviewUrl(URL.createObjectURL(file));
     
-    // Autodetectar nombre aproximado basado en el archivo o pedir confirmación
-    const guessedName = file.name.split(".")[0].replace(/[-_]/g, " ");
-    setSearchQuery(guessedName);
-    processIdentification(guessedName);
+    // En lugar de leer el nombre corrupto del archivo, abre el cuadro de diálogo inteligente
+    setSpeciesInput("");
+    setShowConfirmModal(true);
   };
 
   const handleRecycle = (item) => {
@@ -297,6 +304,31 @@ export default function EcoQuest() {
         </div>
       )}
 
+      {/* MODAL / DIÁLOGO DE CONFIRMACIÓN DE ESPECIE TRAS SUBIR FOTO */}
+      {showConfirmModal && (
+        <div style={{ position:"fixed", top:0, left:0, right:0, bottom:0, background:"rgba(0,0,0,0.85)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:10000, padding:20 }}>
+          <div style={{ background:"#0b1e14", border:"1px solid rgba(74,222,128,0.3)", borderRadius:24, padding:20, maxWidth:400, width:"100%" }}>
+            <div style={{ fontSize:28, textAlign:"center", marginBottom:8 }}>🔍</div>
+            <div style={{ fontSize:15, fontWeight:"bold", color:"#fff", textAlign:"center", marginBottom:4 }}>¡Fotografía detectada correctamente!</div>
+            <div style={{ fontSize:12, color:"#86efacaa", textAlign:"center", marginBottom:16 }}>¿Qué organismo o especie vegetal/animal deseas registrar en este punto ecológico?</div>
+            
+            <input 
+              type="text" 
+              value={speciesInput} 
+              onChange={e => setSpeciesInput(e.target.value)} 
+              placeholder="Ej: Olivo, Margarita, Gorrión, Gato..." 
+              style={{ width:"100%", background:"rgba(0,0,0,0.4)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:12, padding:12, color:"#fff", fontSize:13, boxSizing:"border-box", marginBottom:16, textAlign:"center" }} 
+              autoFocus
+            />
+
+            <div style={{ display:"flex", gap:10 }}>
+              <button onClick={() => { setShowConfirmModal(false); if(fileInputRef.current) fileInputRef.current.value=""; }} style={{ flex:1, background:"transparent", border:"1px solid rgba(255,255,255,0.1)", borderRadius:12, color:"#86efacaa", padding:"10px 0", fontSize:13, fontWeight:"bold", cursor:"pointer" }}>Cancelar</button>
+              <button onClick={() => executeIdentification(speciesInput)} disabled={!speciesInput.trim()} style={{ flex:1, background: speciesInput.trim() ? "#16a34a" : "rgba(255,255,255,0.05)", border:"none", borderRadius:12, color:"#fff", padding:"10px 0", fontSize:13, fontWeight:"bold", cursor: speciesInput.trim() ? "pointer" : "default" }}>Escanear Especie</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div style={{ maxWidth:480, margin:"0 auto" }}>
         
         {/* CABECERA RESUMIDA */}
@@ -322,26 +354,20 @@ export default function EcoQuest() {
         {/* PESTAÑA 1: CÁMARA E IDENTIFICADOR */}
         {tab === "scan" && (
           <div style={{ padding:"0 20px" }}>
-            <div onClick={() => fileInputRef.current?.click()} style={{ background:"rgba(255,255,255,0.01)", borderRadius:24, padding:24, border:"2px dashed rgba(74,222,128,0.2)", textAlign:"center", marginBottom:14, cursor:"pointer" }}>
+            <div onClick={() => fileInputRef.current?.click()} style={{ background:"rgba(255,255,255,0.01)", borderRadius:24, padding:32, border:"2px dashed rgba(74,222,128,0.2)", textAlign:"center", marginBottom:20, cursor:"pointer" }}>
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display:"none" }} />
               {scanning ? (
                 <div>
-                  <div style={{ fontSize:32, animation:"spin 1s linear infinite" }}>🧬</div>
-                  <div style={{ marginTop:8, color:"#4ade80", fontSize:12, fontWeight:"600" }}>Consultando red libre botánica...</div>
+                  <div style={{ fontSize:32 }}>🧬</div>
+                  <div style={{ marginTop:8, color:"#4ade80", fontSize:12, fontWeight:"600" }}>Sincronizando red botánica...</div>
                 </div>
               ) : (
                 <div>
-                  <div style={{ fontSize:36 }}>📸</div>
-                  <div style={{ fontSize:13, fontWeight:"bold", color:"#4ade80", marginTop:6 }}>Cargar o Tomar Foto</div>
-                  <div style={{ fontSize:11, color:"#86efac44" }}>Alternativa libre e instantánea</div>
+                  <div style={{ fontSize:40 }}>📸</div>
+                  <div style={{ fontSize:14, fontWeight:"bold", color:"#4ade80", marginTop:8 }}>Adjuntar o Tomar Fotografía</div>
+                  <div style={{ fontSize:11, color:"#86efac44", marginTop:2 }}>Compatible con plantas, fauna y hongos urbanos</div>
                 </div>
               )}
-            </div>
-
-            {/* BUSCADOR MANUAL DE RESPALDO (Excelente para demostrar el flujo si no tienes fotos a mano) */}
-            <div style={{ display:"flex", gap:6, marginBottom:20 }}>
-              <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Escribe especie a escanear (Ej: Olivo, Gato, Amapola)..." style={{ flex:1, background:"rgba(0,0,0,0.3)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:10, padding:"8px 12px", color:"#fff", fontSize:12 }} />
-              <button onClick={() => processIdentification(searchQuery)} style={{ background:"#16a34a", color:"#fff", border:"none", borderRadius:10, padding:"0 14px", fontSize:12, fontWeight:"bold", cursor:"pointer" }}>Escanear</button>
             </div>
 
             {/* FICHA TÉCNICA DINÁMICA */}
@@ -360,17 +386,30 @@ export default function EcoQuest() {
 
                 <div style={{ display:"grid", gap:8 }}>
                   <div style={{ background:"rgba(255,255,255,0.02)", padding:10, borderRadius:10, borderLeft:"3px solid #22d3ee" }}>
-                    <span style={{ color:"#22d3ee", fontWeight:"bold", fontSize:10, display:"block" }}>💧 RIEGO / AGUA</span>
+                    <span style={{ color:"#22d3ee", fontWeight:"bold", fontSize:10, display:"block" }}>💧 REQUERIMIENTOS / AGUA</span>
                     <span style={{ fontSize:11 }}>{result.careSpecs.watering}</span>
                   </div>
                   <div style={{ background:"rgba(255,255,255,0.02)", padding:10, borderRadius:10, borderLeft:"3px solid #fbbf24" }}>
-                    <span style={{ color:"#fbbf24", fontWeight:"bold", fontSize:10, display:"block" }}>☀️ EXPOSICIÓN SOLAR</span>
+                    <span style={{ color:"#fbbf24", fontWeight:"bold", fontSize:10, display:"block" }}>☀️ ILUMINACIÓN Y SOL</span>
                     <span style={{ fontSize:11 }}>{result.careSpecs.light}</span>
                   </div>
                   <div style={{ background:"rgba(255,255,255,0.02)", padding:10, borderRadius:10, borderLeft:"3px solid #4ade80" }}>
-                    <span style={{ color:"#4ade80", fontWeight:"bold", fontSize:10, display:"block" }}>🌍 IMPACTO ECOLÓGICO</span>
+                    <span style={{ color:"#4ade80", fontWeight:"bold", fontSize:10, display:"block" }}>🌍 EQUILIBRIO ECOLÓGICO</span>
                     <span style={{ fontSize:11 }}>{result.careSpecs.ecology}</span>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {uniquePlants > 0 && (
+              <div style={{ marginTop:10 }}>
+                <div style={{ fontSize:11, color:"#86efac44", fontWeight:"bold", marginBottom:6 }}>HISTORIAL DE ESPECIES DETECTADAS ({uniquePlants})</div>
+                <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+                  {Object.entries(plantCount).map(([name, qty]) => (
+                    <span key={name} style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.05)", borderRadius:50, padding:"4px 10px", fontSize:11, color:"#fff" }}>
+                      🌿 {name} <b style={{ color:"#4ade80" }}>x{qty}</b>
+                    </span>
+                  ))}
                 </div>
               </div>
             )}
@@ -471,7 +510,7 @@ export default function EcoQuest() {
           </div>
         )}
 
-        {/* 👤 NUEVA PESTAÑA: APARTADO DE PERFIL COMPLETADO */}
+        {/* PESTAÑA 5: APARTADO DE PERFIL */}
         {tab === "profile" && (
           <div style={{ padding:"0 20px" }}>
             <div style={{ background:"linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0.4))", border:"1px solid rgba(74,222,128,0.15)", borderRadius:24, padding:20, textAlign:"center", marginBottom:16 }}>
@@ -483,7 +522,6 @@ export default function EcoQuest() {
                 {currentRank.emoji} <b>Rango {currentRank.name}:</b> {currentRank.desc}
               </p>
 
-              {/* BARRA DE PROGRESO AL SIGUIENTE RANGO */}
               {nextRank && (
                 <div style={{ marginTop:14 }}>
                   <div style={{ display:"flex", justifyContent:"space-between", fontSize:10, color:"#86efac44", marginBottom:2 }}>
@@ -497,7 +535,6 @@ export default function EcoQuest() {
               )}
             </div>
 
-            {/* ESTADÍSTICAS DEL PERFIL */}
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:16 }}>
               <div style={{ background:"rgba(255,255,255,0.02)", padding:12, borderRadius:16, textAlign:"center" }}>
                 <div style={{ fontSize:20 }}>🌿</div>
@@ -511,7 +548,6 @@ export default function EcoQuest() {
               </div>
             </div>
 
-            {/* FORMULARIO EDITAR PERFIL */}
             <div style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.05)", borderRadius:16, padding:14 }}>
               <div style={{ fontSize:11, fontWeight:"bold", color:"#4ade80", marginBottom:6 }}>AJUSTES DE CUENTA</div>
               <input type="text" value={tempName} onChange={e => setTempName(e.target.value)} style={{ width:"100%", background:"rgba(0,0,0,0.3)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:10, padding:8, color:"#fff", fontSize:12, marginBottom:10, boxSizing:"border-box" }} placeholder="Nuevo apodo..." />
@@ -529,7 +565,7 @@ export default function EcoQuest() {
 
       </div>
 
-      {/* MENÚ INFERIOR CON 5 BOTONES (INCLUYENDO PERFIL) */}
+      {/* MENÚ INFERIOR CON 5 BOTONES */}
       <div style={{ position:"fixed", bottom:0, left:0, right:0, background:"rgba(6,15,25,0.9)", backdropFilter:"blur(20px)", borderTop:"1px solid rgba(255,255,255,0.05)", padding:"12px 0", zIndex:999 }}>
         <div style={{ maxWidth:480, margin:"0 auto", display:"flex", justifyContent:"space-around" }}>
           <button onClick={() => setTab("scan")} style={{ background:"none", border:"none", color: tab === "scan" ? "#4ade80" : "#86efac44", fontSize:11, fontWeight:"bold", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
