@@ -248,7 +248,75 @@ export default function EcoQuest() {
     setTimeout(() => setNotification(null), 3500);
   };
 
-  const handlePhotoUpload = async (e) => {
+ const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setPreviewUrl(URL.createObjectURL(file));
+    setScanning(true);
+    setResult(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const res = await fetch("https://api.inaturalist.org/v1/computervision/score_image", {
+        method: "POST",
+        headers: { "Authorization": INAT_TOKEN },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        throw new Error("Token expirado o error de red");
+      }
+
+      const data = await res.json();
+      const top = data.results?.[0];
+
+      if (top?.taxon) {
+        const taxon = top.taxon;
+        const name = taxon.preferred_common_name || taxon.name;
+        const scientific = taxon.name;
+        const score = Math.round((top.combined_score || 0) * 100);
+        const pts = Math.min(60, Math.max(10, Math.round(score * 0.6)));
+        const isInvasora = taxon.establishment_means?.establishment_means === "introduced";
+        const familyName = taxon.family_name || null;
+
+        setResult({
+          type: "plant", name, scientific,
+          origin: isInvasora ? "Introducida" : "Nativa",
+          status: isInvasora ? "Invasora" : "Autóctona",
+          points: pts,
+          inatImage: taxon.default_photo?.medium_url || null,
+          family: familyName,
+          observations: taxon.observations_count || 0,
+          wikiInfo: null,
+        });
+
+        setPlantCount(prev => ({ ...prev, [name]: (prev[name] || 0) + 1 }));
+        if (isInvasora) setInvasoraCount(c => c + 1);
+        addPoints(pts, name, "🌿");
+
+        setLoadingInfo(true);
+        try {
+          const wikiInfo = await fetchWikiInfo(scientific, name, familyName);
+          setResult(prev => prev ? { ...prev, wikiInfo } : prev);
+        } catch (e) {
+          console.error("Error en Wiki:", e);
+        }
+        setLoadingInfo(false);
+      } else {
+        setResult({ type: "none", message: "No se identificó el espécimen." });
+      }
+    } catch (err) {
+      console.error(err);
+      setResult({ type: "error", message: "Error: El Token de iNaturalist ha caducado." });
+    } finally {
+      // Esta línea es la que evita que se quede "cargando" para siempre
+      setScanning(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
     const file = e.target.files?.[0];
     if (!file) return;
     setPreviewUrl(URL.createObjectURL(file));
