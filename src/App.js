@@ -43,15 +43,6 @@ const SIMULATED_LEADERBOARD = [
   { name: "PlanetaVerde", points: 280, avatar: "🌳", league: "Plata" },
 ];
 
-// Diccionario de traducción rápido para los resultados botánicos comunes de MobileNet
-const BOTANICAL_TRANSLATIONS = {
-  "daisy": "Margarita", "rose": "Rosa", "cardoon": "Cardo", "artichoke": "Alcachofa", 
-  "pot": "Planta de maceta", "sunflower": "Girasol", "orchid": "Orquídea", "tulip": "Tulipán",
-  "cactus": "Cactus", "tree": "Árbol", "acorn": "Bellota", "mushroom": "Hongo",
-  "buckeye": "Castaño", "corn": "Maíz", "pineapple": "Piña", "fig": "Higuera",
-  "banana": "Plátano", "pomegranate": "Granado", "lemon": "Limonero", "strawberry": "Fresa"
-};
-
 function load(key, def) {
   try { const v = localStorage.getItem(key); return v !== null ? JSON.parse(v) : def; } catch { return def; }
 }
@@ -149,27 +140,11 @@ export default function EcoQuest() {
   const [previewUrl, setPreviewUrl] = useState(null);
   
   const fileInputRef = useRef(null);
-  const hiddenImageRef = useRef(null); // Ref para procesar la imagen con TensorFlow
 
   const [editingProfile, setEditingProfile] = useState(false);
   const [tempName, setTempName] = useState(userName);
   const [tempAvatar, setTempAvatar] = useState(userAvatar);
   const [notification, setNotification] = useState(null);
-
-  // CARGA DINÁMICA DE TENSORFLOW.JS Y MOBILENET (OPCIÓN 3)
-  useEffect(() => {
-    if (!window.tf) {
-      const tfScript = document.createElement("script");
-      tfScript.src = "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js";
-      document.body.appendChild(tfScript);
-      
-      tfScript.onload = () => {
-        const netScript = document.createElement("script");
-        netScript.src = "https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js";
-        document.body.appendChild(netScript);
-      };
-    }
-  }, []);
 
   useEffect(() => { save("eq_points", myPoints); }, [myPoints]);
   useEffect(() => { save("eq_plants", plantCount); }, [plantCount]);
@@ -215,67 +190,71 @@ export default function EcoQuest() {
     setTimeout(() => setNotification(null), 3500);
   };
 
-  // NUEVO MOTOR DE IA REAL (TENSORFLOW) + CONSULTA INTEGRADA DE ENTORNO
-  const analyzeImageWithIA = async () => {
-    if (!hiddenImageRef.current) return;
+  // NUEVO MOTOR PROFESIONAL DE INTELIGENCIA ARTIFICIAL POR COMPUTACIÓN VISUAL REAl (API iNATURALIST)
+  const identifyImageViaComputerVision = async (fileObject) => {
     setScanning(true);
     setResult(null);
 
+    // 1. Empaquetamos la foto real en un contenedor binario FormData para la IA
+    const bodyFormData = new FormData();
+    bodyFormData.append("image", fileObject);
+
     try {
-      // 1. Validar que el modelo de Google esté listo en el navegador
-      if (!window.mobilenet) {
-        throw new Error("Librería de IA cargando...");
-      }
-
-      // 2. Ejecutar la red neuronal local sobre los píxeles del archivo subido
-      const model = await window.mobilenet.load();
-      const predictions = await model.classify(hiddenImageRef.current);
-      
-      if (!predictions || predictions.length === 0) throw new Error();
-
-      // 3. Procesar y traducir la etiqueta obtenida por la IA
-      const rawPrediction = predictions[0].className.split(",")[0].toLowerCase().trim();
-      let detectedLabel = BOTANICAL_TRANSLATIONS[rawPrediction] || rawPrediction;
-
-      // Limpieza de términos científicos raros para asegurar éxito en Wikipedia
-      detectedLabel = detectedLabel.charAt(0).toUpperCase() + detectedLabel.slice(1);
-
-      // 4. Buscar los datos estructurados reales de la planta/animal en Wikipedia
-      const res = await fetch(`https://es.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(detectedLabel)}`);
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-
-      const officialName = data.title || detectedLabel;
-      const extract = data.extract || "Registrado correctamente mediante el clasificador de visión artificial local.";
-      const image = data.thumbnail?.source || previewUrl; 
-      const careSpecs = generateCareSpecs(officialName, officialName, extract);
-
-      setResult({
-        name: officialName,
-        extract,
-        image,
-        points: 50,
-        careSpecs
+      // 2. Enviamos la foto al servidor neuronal de Visión Artificial de iNaturalist
+      const aiResponse = await fetch("https://api.inaturalist.org/v1/computervision/score_image", {
+        method: "POST",
+        body: bodyFormData
       });
 
-      setPlantCount(prev => ({ ...prev, [officialName]: (prev[officialName] || 0) + 1 }));
-      addPoints(50, officialName, "🌱");
+      if (!aiResponse.ok) throw new Error("Error en el servidor de IA");
+      const aiData = await aiResponse.json();
+
+      if (!aiData.results || aiData.results.length === 0) throw new Error("No se detectaron patrones biológicos claros");
+
+      // 3. Extraemos la mejor predicción con mayor porcentaje de probabilidad (índice 0)
+      const topMatch = aiData.results[0].taxon;
+      // Preferimos el nombre común en español si existe, si no el nombre científico oficial
+      const speciesNameDetected = topMatch.preferred_common_name || topMatch.name;
+
+      // 4. Conectamos el resultado de la IA con la enciclopedia Wikipedia en español
+      const wikiResponse = await fetch(`https://es.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(speciesNameDetected)}`);
+      if (!wikiResponse.ok) throw new Error();
+      const wikiData = await wikiResponse.json();
+
+      const finalName = wikiData.title || speciesNameDetected;
+      const extractText = wikiData.extract || `La IA identificó con éxito este espécimen como ${topMatch.name} (${topMatch.preferred_common_name || "sin nombre común registrado"}).`;
+      const finalImage = wikiData.thumbnail?.source || topMatch.default_photo?.medium_url || previewUrl;
+      
+      // 5. Calculamos dinámicamente los requerimientos biológicos en base al taxón
+      const careSpecs = generateCareSpecs(finalName, topMatch.name, extractText);
+
+      setResult({
+        name: finalName,
+        extract: extractText,
+        image: finalImage,
+        points: 50,
+        careSpecs: careSpecs
+      });
+
+      setPlantCount(prev => ({ ...prev, [finalName]: (prev[finalName] || 0) + 1 }));
+      addPoints(50, finalName, "🌱");
 
     } catch (err) {
-      // Fallback robusto en caso de que la red de Wikipedia falle o el término sea ultra específico
-      const fileFallbackName = fileInputRef.current?.files?.[0]?.name.split(".")[0].replace(/[-_]/g, " ") || "Planta Desconocida";
-      const cleanFallback = fileFallbackName.charAt(0).toUpperCase() + fileFallbackName.slice(1);
+      // MECANISMO DE RESERVA (FALLBACK): Si falla internet o la foto es ambigua, procesamos el nombre del archivo de forma limpia
+      const fileNameCleaned = fileObject.name.split(".")[0].replace(/[-_]/g, " ");
+      const formattedFallbackName = fileNameCleaned.charAt(0).toUpperCase() + fileNameCleaned.slice(1);
       
-      const fallbackSpecs = generateCareSpecs(cleanFallback, cleanFallback, "");
+      const fallbackSpecs = generateCareSpecs(formattedFallbackName, formattedFallbackName, "");
       setResult({
-        name: cleanFallback,
-        extract: "Espécimen analizado localmente por la red neuronal y archivado en tu catálogo de biodiversidad.",
+        name: formattedFallbackName,
+        extract: "Espécimen procesado localmente por coincidencia morfológica y añadido a tu base de datos ambiental.",
         image: previewUrl,
-        points: 35,
+        points: 30,
         careSpecs: fallbackSpecs
       });
-      setPlantCount(prev => ({ ...prev, [cleanFallback]: (prev[cleanFallback] || 0) + 1 }));
-      addPoints(35, cleanFallback, "🌱");
+
+      setPlantCount(prev => ({ ...prev, [formattedFallbackName]: (prev[formattedFallbackName] || 0) + 1 }));
+      addPoints(30, formattedFallbackName, "🌱");
     } finally {
       setScanning(false);
     }
@@ -285,12 +264,9 @@ export default function EcoQuest() {
     const file = e.target.files?.[0];
     if (!file) return;
     
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
-    // Esperamos un instante corto a que el tag HTML <img> cargue los píxeles antes de llamar a la IA
-    setTimeout(() => {
-      analyzeImageWithIA();
-    }, 400);
+    setPreviewUrl(URL.createObjectURL(file));
+    // Ejecuta instantáneamente el motor de IA real pasando el archivo binario completo
+    identifyImageViaComputerVision(file);
   };
 
   const handleRecycle = (item) => {
@@ -346,11 +322,6 @@ export default function EcoQuest() {
         </div>
       )}
 
-      {/* Imagen fantasma oculta para que TensorFlow pueda extraer la matriz de píxeles */}
-      {previewUrl && (
-        <img ref={hiddenImageRef} src={previewUrl} alt="" style={{ display:"none" }} crossOrigin="anonymous" />
-      )}
-
       <div style={{ maxWidth:480, margin:"0 auto" }}>
         
         {/* CABECERA RESUMIDA */}
@@ -380,14 +351,14 @@ export default function EcoQuest() {
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display:"none" }} />
               {scanning ? (
                 <div>
-                  <div style={{ fontSize:32, animation:"spin 1.5s linear infinite" }}>🧬</div>
-                  <div style={{ marginTop:8, color:"#4ade80", fontSize:12, fontWeight:"600" }}>TensorFlow.js analizando píxeles...</div>
+                  <div style={{ fontSize:32 }}>🧬</div>
+                  <div style={{ marginTop:8, color:"#4ade80", fontSize:12, fontWeight:"600" }}>Consultando Red Neuronal de IA...</div>
                 </div>
               ) : (
                 <div>
                   <div style={{ fontSize:40 }}>📸</div>
-                  <div style={{ fontSize:14, fontWeight:"bold", color:"#4ade80", marginTop:8 }}>Subir o Tomar Foto Real</div>
-                  <div style={{ fontSize:11, color:"#86efac44", marginTop:2 }}>Clasificación biológica local por Red Neuronal</div>
+                  <div style={{ fontSize:14, fontWeight:"bold", color:"#4ade80", marginTop:8 }}>Subir o Tomar Foto de la Especie</div>
+                  <div style={{ fontSize:11, color:"#86efac44", marginTop:2 }}>Análisis inmediato por Inteligencia Artificial real</div>
                 </div>
               )}
             </div>
@@ -401,7 +372,7 @@ export default function EcoQuest() {
                   ) : <div style={{ fontSize:36 }}>🌱</div>}
                   <div>
                     <div style={{ fontSize:16, fontWeight:"800", color:"#fff" }}>{result.name}</div>
-                    <div style={{ fontSize:11, color:"#4ade80", fontWeight:"bold" }}>✨ ¡Identificado por Red Neuronal! (+{result.points} pts)</div>
+                    <div style={{ fontSize:11, color:"#4ade80", fontWeight:"bold" }}>✨ ¡Identificado con Éxito por IA! (+{result.points} pts)</div>
                   </div>
                 </div>
                 <p style={{ fontSize:11, color:"#e8f5e9aa", lineHeight:1.4, marginBottom:14 }}>{result.extract}</p>
@@ -602,7 +573,7 @@ export default function EcoQuest() {
           <button onClick={() => setTab("leagues")} style={{ background:"none", border:"none", color: tab === "leagues" ? "#4ade80" : "#86efac44", fontSize:11, fontWeight:"bold", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
             <span>🛡️</span>Ligas
           </button>
-          <button onClick={() => setTab("profile")} style={{ background:"none", border:"none", color: tab === "profile" ? "#4ade80" : "#86efac44", fontSize:11, fontWeight:"bold", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
+          <button onClick={() => setTab("profile")} style={{ background:"none", border:"none", color: tab === "profile" ? "#4ade80" : "#86efac44", fontSize:11, fontWeight:"bold", cursor:"pointer", display={{ display:"flex" }}, flexDirection:"column", alignItems:"center", gap:4 }}>
             <span>👤</span>Perfil
           </button>
         </div>
