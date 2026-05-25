@@ -6,7 +6,7 @@ const RANKS = [
   { name: "Semilla",     min: 0,    emoji: "🌱", color: "#86efac", desc: "Acabas de plantar tu interés por la naturaleza." },
   { name: "Brote",       min: 100,  emoji: "🌿", color: "#4ade80", desc: "Tu conocimiento empieza a emerger con fuerza." },
   { name: "Explorador",  min: 300,  emoji: "🔭", color: "#22d3ee", desc: "Buscas rincones verdes y cuidas tu entorno activo." },
-  { name: "Botánico",    min: 700,  emoji: "🌸", color: "#a78bfa", desc: "Reconuces las sutilezas de la flora urbana y silvestre." },
+  { name: "Botánico",    min: 700,  emoji: "🌸", color: "#a78bfa", desc: "Reconoces las sutilezas de la flora urbana y silvestre." },
   { name: "Naturalista", min: 1500, emoji: "🌳", color: "#fbbf24", desc: "Un pilar de la comunidad con un gran impacto ecológico." },
   { name: "Guardián",    min: 3000, emoji: "🛡️", color: "#f87171", desc: "Protector definitivo del planeta y maestro reciclador." },
 ];
@@ -21,7 +21,7 @@ const RECYCLE_ITEMS = [
 ];
 
 const ACHIEVEMENTS = [
-  { id: "first_plant",  title: "Primer Brote",      desc: "Identifica tu primera planta",      emoji: "🌱", bonus: 20,  check: (p)       => Object.keys(p).length >= 1 },
+  { id: "first_plant",  title: "Primer Brote",      desc: "Identifica tu primera especie",      emoji: "🌱", bonus: 20,  check: (p)       => Object.keys(p).length >= 1 },
   { id: "plants_5",     title: "Explorador Verde",  desc: "Identifica 5 especies distintas",  emoji: "🔭", bonus: 50,  check: (p)       => Object.keys(p).length >= 5 },
   { id: "plants_12",    title: "Maestro Botánico",   desc: "Identifica 12 especies distintas", emoji: "🌿", bonus: 180, check: (p)       => Object.keys(p).length >= 12 },
   { id: "plants_25",    title: "Gran Naturalista",  desc: "Identifica 25 especies distintas", emoji: "🌳", bonus: 500, check: (p)       => Object.keys(p).length >= 25 },
@@ -33,7 +33,7 @@ const ACHIEVEMENTS = [
 
 const WEEKLY_CHALLENGES = [
   { id: "w_1", title: "Operación Vidrio", desc: "Recicla 3 botellas o envases de vidrio esta semana", emoji: "🍾", target: 3, bonus: 40 },
-  { id: "w_2", title: "Biodiversidad Urb", desc: "Registra 3 plantas diferentes en tu entorno", emoji: "🌻", target: 3, bonus: 60 },
+  { id: "w_2", title: "Biodiversidad Urb", desc: "Registra 3 especies diferentes en tu entorno", emoji: "🌻", target: 3, bonus: 60 },
 ];
 
 const SIMULATED_LEADERBOARD = [
@@ -68,6 +68,45 @@ function getCompetitionLeague(points) {
 function generateCareSpecs(commonName, scientificName, wikiExtract, family) {
   const text = (wikiExtract + " " + family + " " + commonName + " " + scientificName).toLowerCase();
   
+  // Identificar si es planta u otro reino animal/hongo
+  const isAnimal = text.includes("animal") || text.includes("ave") || text.includes("pájaro") || text.includes("insecto") || text.includes("mamífero") || text.includes("reptil") || text.includes("mariposa");
+  const isHongo = text.includes("hongo") || text.includes("seta") || text.includes("micelio") || text.includes("espora");
+
+  if (isAnimal) {
+    return {
+      leafType: "Fauna",
+      watering: "No aplica (Organismo móvil autónomo)",
+      flowering: "No aplica (Reino Animalia)",
+      light: "Hábitat natural variable (Zonas boscosas, arbolado urbano o zonas ajardinadas)",
+      soil: "No requiere sustrato (Requeres ecosistemas saludables con alimento disponible)",
+      pests: "Amenazado por la pérdida de hábitat urbano, pesticidas químicos y contaminación lumínica",
+      ecology: "Controlador biológico de plagas de insectos y pieza fundamental en la cadena trófica local",
+      feature: "Especie animal detectada en el entorno ecológico urbano.",
+      curiosities: [
+        "A diferencia de las plantas, busca activamente refugio e interactúa dinámicamente con la flora de la ciudad.",
+        "Su presencia indica un grado favorable de biodiversidad y salud ecológica en la cuadrícula urbana."
+      ]
+    };
+  }
+
+  if (isHongo) {
+    return {
+      leafType: "Fungi",
+      watering: "Muy alto (Requiere humedad ambiental constante en madera o suelo en descomposición)",
+      flowering: "No produce flores (Se reproduce por liberación masiva de esporas aéreas)",
+      light: "Ambientes umbríos (Sombra completa, bosques densos o bajo la hojarasca protegida)",
+      soil: "Materia orgánica muerta rico en celulosa, madera en descomposición o suelos húmedos",
+      pests: "Sensible a las sequías prolongadas, cambios drásticos de temperatura y sustratos estériles",
+      ecology: "Descomponedor principal del ecosistema. Recicla la materia orgánica volviéndola nutrientes para el suelo",
+      feature: "Organismo del Reino Fungi vital para la fertilidad del suelo.",
+      curiosities: [
+        "La seta visible es solo el 'fruto'. El organismo real es una inmensa red subterránea llamada micelio.",
+        "Establece simbiosis con las raíces de los árboles para transferirles agua a cambio de azúcares."
+      ]
+    };
+  }
+
+  // Configuración por defecto: Planta
   let watering = "Moderado (1 o 2 veces por semana, esperando a que seque el sustrato)";
   if (text.includes("cactus") || text.includes("suculenta") || text.includes("desiert") || text.includes("seco") || text.includes("crasa")) {
     watering = "Bajo (Solo cuando el suelo esté completamente seco, cada 10-15 días)";
@@ -78,14 +117,14 @@ function generateCareSpecs(commonName, scientificName, wikiExtract, family) {
   let flowering = "Primavera y meses cálidos de Verano";
   if (text.includes("otoño")) flowering = "Finales de Verano y Otoño completo";
   if (text.includes("invierno")) flowering = "Meses fríos de Invierno y principios de Primavera";
-  if (text.includes("no tiene flor") || text.includes("helecho") || text.includes("musgo") || text.includes("pino") || text.includes("conífera") || text.includes("hongo") || text.includes("seta")) {
+  if (text.includes("no tiene flor") || text.includes("helecho") || text.includes("musgo") || text.includes("pino") || text.includes("conífera")) {
     flowering = "No produce flores (Se reproduce por esporas o piñas/conos)";
   }
 
   let light = "Semisombra o luz solar indirecta brillante (Ideal para evitar quemaduras)";
   if (text.includes("árbol") || text.includes("pino") || text.includes("roble") || text.includes("cactus") || text.includes("mediterrán") || text.includes("olivo") || text.includes("sol")) {
     light = "Pleno sol directo (Requiere alta radiación para fotosíntesis y desarrollo óptimo)";
-  } else if (text.includes("interior") || text.includes("sombra") || text.includes("bosque denso") || text.includes("musgo")) {
+  } else if (text.includes("interior") || text.includes("sombra") || text.includes("bosque denso")) {
     light = "Sombra protegida o ambientes interiores bien iluminados";
   }
 
@@ -251,14 +290,14 @@ export default function EcoQuest() {
       const formData = new FormData();
       formData.append("image", file);
 
-      // LLAMADA ABIERTA Y PÚBLICA (PLAN B): No requiere tokens propensos a caducar
-      const res = await fetch("https://api.inaturalist.org/v1/computervision/score_image", {
+      // SOLUCIÓN AL ESCÁNER: Agregado el parámetro obligatorio per_page=1 de iNaturalist
+      const res = await fetch("https://api.inaturalist.org/v1/computervision/score_image?per_page=1", {
         method: "POST",
         body: formData,
       });
 
       if (!res.ok) {
-        throw new Error(`Error en el servidor iNaturalist (${res.status})`);
+        throw new Error(`Error del servidor (${res.status})`);
       }
 
       const data = await res.json();
@@ -301,7 +340,7 @@ export default function EcoQuest() {
       }
     } catch (err) {
       console.error(err);
-      setResult({ type: "error", message: "Fallo de conexión botánica o imagen incompatible." });
+      setResult({ type: "error", message: "Fallo de conexión o imagen corrupta. Reinténtalo." });
     } finally {
       setScanning(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -366,6 +405,8 @@ export default function EcoQuest() {
     ...SIMULATED_LEADERBOARD
   ].sort((a, b) => b.points - a.points);
 
+  const userPosition = combinedLeaderboard.findIndex(item => item.isUser) + 1;
+
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(135deg,#060f19 0%,#081710 50%,#060f19 100%)", fontFamily: "system-ui, sans-serif", color: "#e8f5e9", paddingBottom: 130 }}>
       
@@ -381,9 +422,11 @@ export default function EcoQuest() {
         {/* BANNER DE USUARIO */}
         <div style={{ display:"flex", alignItems:"center", padding:"20px 20px 10px", justifyContent:"space-between" }}>
           <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-            <span style={{ fontSize:28, background:"rgba(255,255,255,0.06)", borderRadius:"50%", width:44, height:44, display:"flex", alignItems:"center", justifyContent:"center" }}>{userAvatar}</span>
+            <span onClick={() => { setTempName(userName); setTempAvatar(userAvatar); setEditingProfile(true); }} style={{ fontSize:28, background:"rgba(255,255,255,0.06)", borderRadius:"50%", width:44, height:44, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer" }}>{userAvatar}</span>
             <div>
-              <div style={{ fontSize:14, fontWeight:"bold", color:"#fff" }}>{userName}</div>
+              <div onClick={() => { setTempName(userName); setTempAvatar(userAvatar); setEditingProfile(true); }} style={{ fontSize:14, fontWeight:"bold", color:"#fff", cursor:"pointer", display:"flex", alignItems:"center", gap:4 }}>
+                {userName} <span style={{ fontSize:10, color:"#86efac66" }}>✏️</span>
+              </div>
               <div style={{ fontSize:11, color:currentRank.color, fontWeight:"600" }}>{currentRank.emoji} {currentRank.name}</div>
             </div>
           </div>
@@ -396,6 +439,23 @@ export default function EcoQuest() {
         <div style={{ textAlign:"center", padding:"10px 0 15px" }}>
           <div style={{ fontSize:30, fontWeight:"900", background:"linear-gradient(135deg,#4ade80,#22d3ee)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>🌿 EcoQuest</div>
         </div>
+
+        {/* MODAL EDICIÓN PERFIL */}
+        {editingProfile && (
+          <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(74,222,128,0.2)", borderRadius:20, margin:"0 20px 20px", padding:16 }}>
+            <div style={{ fontSize:12, fontWeight:"bold", color:"#4ade80", marginBottom:8 }}>EDITAR AVATAR Y APODO</div>
+            <input type="text" value={tempName} onChange={e => setTempName(e.target.value)} style={{ width:"100%", background:"rgba(0,0,0,0.3)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:10, padding:10, color:"#fff", fontSize:13, marginBottom:12, boxSizing:"border-box" }} placeholder="Nombre de explorador..." />
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(8, 1fr)", gap:6, marginBottom:14 }}>
+              {AVATAR_OPTIONS.map(av => (
+                <span key={av} onClick={() => setTempAvatar(av)} style={{ fontSize:22, padding:4, textAlign:"center", cursor:"pointer", background: tempAvatar === av ? "rgba(74,222,128,0.2)" : "transparent", borderRadius:8 }}>{av}</span>
+              ))}
+            </div>
+            <div style={{ display:"flex", gap:8, justifyContent:"flex-end" }}>
+              <button onClick={() => setEditingProfile(false)} style={{ background:"transparent", border:"none", color:"#86efac44", fontSize:12, padding:"6px 12px", cursor:"pointer" }}>Cancelar</button>
+              <button onClick={handleSaveProfile} style={{ background:"#16a34a", border:"none", color:"#fff", fontSize:12, padding:"6px 14px", borderRadius:8, fontWeight:"bold", cursor:"pointer" }}>Guardar</button>
+            </div>
+          </div>
+        )}
 
         {/* ════════════════ PESTAÑAS PRINCIPALES ════════════════ */}
         
@@ -412,13 +472,13 @@ export default function EcoQuest() {
               ) : (
                 <>
                   <div style={{ fontSize:44 }}>📸</div>
-                  <div style={{ fontSize:14, fontWeight:"bold", color:"#4ade80", marginTop:8 }}>Fotografiar Planta / Flor / Árbol</div>
-                  <div style={{ fontSize:11, color:"#86efac44", marginTop:2 }}>Identificación de flora inteligente sin caducidad</div>
+                  <div style={{ fontSize:14, fontWeight:"bold", color:"#4ade80", marginTop:8 }}>Fotografiar Naturaleza Urbana</div>
+                  <div style={{ fontSize:11, color:"#86efac44", marginTop:2 }}>Identifica plantas, animales, insectos y hongos</div>
                 </>
               )}
             </div>
 
-            {/* MEJORA COMPLETA DE LA FICHA TÉCNICA TRAS ESCANEO */}
+            {/* FICHA TÉCNICA REPARADA TRAS ESCANEO */}
             {result?.type === "plant" && (
               <div style={{ background:"rgba(255,255,255,0.02)", borderRadius:20, padding:18, border:"1px solid rgba(255,255,255,0.06)", marginBottom:20 }}>
                 <div style={{ display:"flex", gap:12, marginBottom:14 }}>
@@ -438,44 +498,37 @@ export default function EcoQuest() {
                   <div>
                     <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:12 }}>
                       
-                      {/* 1. RIEGO */}
                       <div style={{ background:"rgba(255,255,255,0.02)", padding:"10px 12px", borderRadius:10, borderLeft:"3px solid #22d3ee" }}>
-                        <span style={{ color:"#22d3ee", fontWeight:"bold", fontSize:10, display:"block", letterSpacing:0.5 }}>💧 RIEGO RECOMENDADO</span>
+                        <span style={{ color:"#22d3ee", fontWeight:"bold", fontSize:10, display:"block", letterSpacing:0.5 }}>💧 REQUERIMIENTO HÍDRICO / RIEGO</span>
                         <span style={{ fontSize:12, color:"#e8f5e9" }}>{result.wikiInfo.watering}</span>
                       </div>
 
-                      {/* 2. FLORACIÓN */}
                       <div style={{ background:"rgba(255,255,255,0.02)", padding:"10px 12px", borderRadius:10, borderLeft:"3px solid #a78bfa" }}>
                         <span style={{ color:"#a78bfa", fontWeight:"bold", fontSize:10, display:"block", letterSpacing:0.5 }}>🌸 ÉPOCA DE FLORACIÓN / MADUREZ</span>
                         <span style={{ fontSize:12, color:"#e8f5e9" }}>{result.wikiInfo.flowering}</span>
                       </div>
 
-                      {/* 3. LUZ */}
                       <div style={{ background:"rgba(255,255,255,0.02)", padding:"10px 12px", borderRadius:10, borderLeft:"3px solid #fbbf24" }}>
                         <span style={{ color:"#fbbf24", fontWeight:"bold", fontSize:10, display:"block", letterSpacing:0.5 }}>☀️ LUZ Y EXPOSICIÓN SOLAR</span>
                         <span style={{ fontSize:12, color:"#e8f5e9" }}>{result.wikiInfo.light}</span>
                       </div>
 
-                      {/* 4. SUELO */}
                       <div style={{ background:"rgba(255,255,255,0.02)", padding:"10px 12px", borderRadius:10, borderLeft:"3px solid #f59e0b" }}>
                         <span style={{ color:"#f59e0b", fontWeight:"bold", fontSize:10, display:"block", letterSpacing:0.5 }}>🌱 TIPO DE SUELO E IDEAL DE SUSTRATO</span>
                         <span style={{ fontSize:12, color:"#e8f5e9" }}>{result.wikiInfo.soil}</span>
                       </div>
 
-                      {/* 5. PLAGAS */}
                       <div style={{ background:"rgba(255,255,255,0.02)", padding:"10px 12px", borderRadius:10, borderLeft:"3px solid #f87171" }}>
                         <span style={{ color:"#f87171", fontWeight:"bold", fontSize:10, display:"block", letterSpacing:0.5 }}>🐛 AMENAZAS Y PLAGAS COMUNES</span>
                         <span style={{ fontSize:12, color:"#e8f5e9" }}>{result.wikiInfo.pests}</span>
                       </div>
 
-                      {/* 6. IMPACTO ECOLÓGICO */}
                       <div style={{ background:"rgba(255,255,255,0.02)", padding:"10px 12px", borderRadius:10, borderLeft:"3px solid #4ade80" }}>
                         <span style={{ color:"#4ade80", fontWeight:"bold", fontSize:10, display:"block", letterSpacing:0.5 }}>🌍 BENEFICIO ECOLÓGICO</span>
                         <span style={{ fontSize:12, color:"#e8f5e9" }}>{result.wikiInfo.ecology}</span>
                       </div>
                     </div>
 
-                    {/* BLOQUE CURIOSIDADES */}
                     <div style={{ background:"linear-gradient(135deg,rgba(34,211,238,0.06),rgba(74,222,128,0.02))", padding:12, borderRadius:12, border:"1px solid rgba(34,211,238,0.15)" }}>
                       <div style={{ fontSize:11, color:"#22d3ee", fontWeight:"bold", marginBottom:6 }}>💡 SABÍAS QUE...</div>
                       {result.wikiInfo.curiosities.map((cur, i) => (
@@ -491,7 +544,7 @@ export default function EcoQuest() {
 
             {uniquePlants > 0 && (
               <div>
-                <div style={{ fontSize:11, color:"#86efac44", fontWeight:"bold", marginBottom:6 }}>COLECCIÓN DE ESPECIES REGISTRADAS ({uniquePlants})</div>
+                <div style={{ fontSize:11, color:"#86efac44", fontWeight:"bold", marginBottom:6 }}>HISTORIAL DE ESPECIES DETECTADAS ({uniquePlants})</div>
                 <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
                   {Object.entries(plantCount).map(([name, qty]) => (
                     <span key={name} style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.05)", borderRadius:50, padding:"4px 10px", fontSize:11, color:"#fff" }}>
@@ -525,10 +578,57 @@ export default function EcoQuest() {
           </div>
         )}
 
-        {/* PESTAÑA 3: RETOS Y LOGROS */}
+        {/* PESTAÑA 3: RETOS Y LOGROS (RESTAURADO) */}
         {tab === "achievements" && (
           <div style={{ padding:"0 20px" }}>
-            <div style={{ fontSize:11, color:"#86efac44", fontWeight:"bold", marginBottom:10 }}>LOGROS DESBLOQUEADOS</div>
+            
+            {/* RETOS SEMANALES */}
+            <div style={{ background:"rgba(255,255,255,0.02)", borderRadius:16, padding:14, border:"1px solid rgba(251,191,36,0.15)", marginBottom:18 }}>
+              <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
+                <span style={{ fontSize:11, color:"#fbbf24", fontWeight:"bold" }}>⏱️ RETOS DE LA COMUNIDAD SEMANAL</span>
+                <span style={{ fontSize:11, color:"#f87171", fontWeight:"bold" }}>Termina en: {timeLeft}</span>
+              </div>
+              {WEEKLY_CHALLENGES.map(w => {
+                const currentProgress = w.id === "w_1" ? (recycleCount["glass"] || 0) : uniquePlants;
+                const pct = Math.min(100, Math.round((currentProgress / w.target) * 100));
+                return (
+                  <div key={w.id} style={{ marginBottom:12 }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, marginBottom:4 }}>
+                      <span>{w.emoji} {w.title} <span style={{ color:"#86efac44" }}>({w.desc})</span></span>
+                      <span style={{ fontWeight:"bold" }}>{currentProgress}/{w.target} ({pct}%)</span>
+                    </div>
+                    <div style={{ height:6, background:"rgba(255,255,255,0.05)", borderRadius:10, overflow:"hidden" }}>
+                      <div style={{ height:"100%", width:`${pct}%`, background: pct === 100 ? "#4ade80" : "linear-gradient(90deg, #fbbf24, #4ade80)" }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* RECOMPENSAS / COFRES */}
+            <div style={{ fontSize:11, color:"#86efac44", fontWeight:"bold", marginBottom:10 }}>COFRES DE RECOMPENSA ACTIVOS</div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:18 }}>
+              
+              <div onClick={() => triggerOpenChest("wood")} style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(139,115,85,0.2)", padding:14, borderRadius:16, textAlign:"center", cursor: chestWoodState==="ready"?"pointer":"default" }}>
+                <div style={{ fontSize:32 }}>{chestWoodState==="opened"?"🧰" : chestWoodState==="animating"?"⏳":"📦"}</div>
+                <div style={{ fontSize:12, fontWeight:"bold", color:"#a16207", marginTop:2 }}>Cofre de Madera</div>
+                <button disabled={chestWoodState!=="ready"} style={{ marginTop:6, background:chestWoodState==="ready"?"#a16207":"rgba(255,255,255,0.05)", border:"none", borderRadius:8, color:"#fff", fontSize:10, padding:"4px 10px", fontWeight:"bold", cursor:"pointer" }}>
+                  {chestWoodState==="ready"?"RECLAMAR 50 Pts" : chestWoodState==="animating"?"Abriendo...":"Abierto ✅"}
+                </button>
+              </div>
+
+              <div onClick={() => triggerOpenChest("crystal")} style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(34,211,238,0.2)", padding:14, borderRadius:16, textAlign:"center", cursor: chestCrystalState==="ready"?"pointer":"default" }}>
+                <div style={{ fontSize:32 }}>{chestCrystalState==="opened"?"💎" : chestCrystalState==="animating"?"⏳":"🔮"}</div>
+                <div style={{ fontSize:12, fontWeight:"bold", color:"#22d3ee", marginTop:2 }}>Cofre de Cristal</div>
+                <button disabled={chestCrystalState!=="ready"} style={{ marginTop:6, background:chestCrystalState==="ready"?"#0891b2":"rgba(255,255,255,0.05)", border:"none", borderRadius:8, color:"#fff", fontSize:10, padding:"4px 10px", fontWeight:"bold", cursor:"pointer" }}>
+                  {chestCrystalState==="ready"?"RECLAMAR 150 Pts" : chestCrystalState==="animating"?"Abriendo...":"Abierto ✅"}
+                </button>
+              </div>
+
+            </div>
+
+            {/* LOGROS */}
+            <div style={{ fontSize:11, color:"#86efac44", fontWeight:"bold", marginBottom:10 }}>LOGROS DE EXPLORACIÓN</div>
             <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
               {ACHIEVEMENTS.map(ach => {
                 const isUnlocked = unlockedAch.includes(ach.id);
@@ -544,12 +644,76 @@ export default function EcoQuest() {
                 );
               })}
             </div>
+
+          </div>
+        )}
+
+        {/* PESTAÑA 4: COMPETICIÓN / LIGAS (RESTAURADO) */}
+        {tab === "leagues" && (
+          <div style={{ padding:"0 20px" }}>
+            
+            <div style={{ display:"flex", background:"rgba(0,0,0,0.2)", borderRadius:12, padding:4, marginBottom:16 }}>
+              <button onClick={() => setLeagueSubTab("myLeague")} style={{ flex:1, background: leagueSubTab === "myLeague" ? "rgba(255,255,255,0.06)" : "transparent", border:"none", borderRadius:8, color: leagueSubTab === "myLeague" ? "#fff" : "#86efac44", fontSize:11, fontWeight:"bold", padding:"8px 0", cursor:"pointer" }}>Mi División Global</button>
+              <button onClick={() => setLeagueSubTab("groups")} style={{ flex:1, background: leagueSubTab === "groups" ? "rgba(255,255,255,0.06)" : "transparent", border:"none", borderRadius:8, color: leagueSubTab === "groups" ? "#fff" : "#86efac44", fontSize:11, fontWeight:"bold", padding:"8px 0", cursor:"pointer" }}>Grupos / Aulas</button>
+            </div>
+
+            {leagueSubTab === "myLeague" ? (
+              <div style={{ background: compLeague.bg, border:`1px solid ${compLeague.border}`, borderRadius:20, padding:16 }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
+                  <div>
+                    <div style={{ fontSize:11, fontWeight:"bold", color:compLeague.color }}>RANGO COMPETITIVO ACTUAL</div>
+                    <div style={{ fontSize:20, fontWeight:"900", color:"#fff" }}>{compLeague.badge} Liga de {compLeague.name}</div>
+                  </div>
+                  <div style={{ textAlign:"right" }}>
+                    <div style={{ fontSize:11, color:"#86efac44" }}>Tu Posición</div>
+                    <div style={{ fontSize:18, fontWeight:"900", color:"#4ade80" }}>#{userPosition}º de 6</div>
+                  </div>
+                </div>
+
+                <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                  {combinedLeaderboard.map((user, idx) => (
+                    <div key={idx} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 10px", borderRadius:10, background: user.isUser ? "rgba(74,222,128,0.12)" : "rgba(255,255,255,0.01)" }}>
+                      <span style={{ fontSize:12, fontWeight:"bold", width:16, color: idx===0?"#fbbf24":idx===1?"#cbd5e1":"#86efac44" }}>{idx+1}</span>
+                      <span style={{ fontSize:18 }}>{user.avatar}</span>
+                      <span style={{ flex:1, fontSize:12, fontWeight: user.isUser?"bold":"normal", color:user.isUser?"#fff":"#e8f5e9" }}>{user.name}</span>
+                      <span style={{ fontSize:12, fontWeight:"900", color: user.isUser?"#4ade80":"#fbbf24" }}>{user.points} pts</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div>
+                <form onSubmit={handleJoinLeague} style={{ display:"flex", gap:8, marginBottom:16 }}>
+                  <input type="text" value={leagueInput} onChange={e => setLeagueInput(e.target.value)} placeholder="Código o Nombre de Aula/Grupo..." style={{ flex:1, background:"rgba(0,0,0,0.3)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:10, padding:"10px 12px", color:"#fff", fontSize:12 }} />
+                  <button type="submit" style={{ background:"#16a34a", color:"#fff", border:"none", borderRadius:10, padding:"0 16px", fontWeight:"bold", fontSize:12, cursor:"pointer" }}>Unirse</button>
+                </form>
+
+                <div style={{ background:"rgba(255,255,255,0.02)", padding:14, borderRadius:16, marginBottom:14 }}>
+                  <div style={{ fontSize:11, color:"#86efac44", fontWeight:"bold", marginBottom:4 }}>TU CÓDIGO DE INVITACIÓN</div>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"rgba(0,0,0,0.2)", padding:"8px 12px", borderRadius:10 }}>
+                    <code style={{ fontSize:13, color:"#22d3ee", fontWeight:"bold" }}>{userCode}</code>
+                    <button onClick={copyCodeToClipboard} style={{ background:"transparent", border:"none", color:"#4ade80", fontSize:11, fontWeight:"bold", cursor:"pointer" }}>Copiar</button>
+                  </div>
+                </div>
+
+                <div style={{ fontSize:11, color:"#86efac44", fontWeight:"bold", marginBottom:6 }}>MIS COMUNIDADES ACTIVAS</div>
+                <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                  {myLeagues.map(group => (
+                    <div key={group} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"rgba(255,255,255,0.02)", padding:"10px 14px", borderRadius:12, border:"1px solid rgba(255,255,255,0.03)" }}>
+                      <span style={{ fontSize:13, fontWeight:"bold" }}>🛡️ {group}</span>
+                      <span style={{ background:"rgba(34,211,238,0.1)", color:"#22d3ee", fontSize:10, padding:"2px 8px", borderRadius:50, fontWeight:"bold" }}>Sincronizado</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
           </div>
         )}
 
       </div>
 
-      {/* MENÚ DE NAVEGACIÓN INFERIOR */}
+      {/* MENÚ DE NAVEGACIÓN INFERIOR RESTAURADO */}
       <div style={{ position:"fixed", bottom:0, left:0, right:0, background:"rgba(6,15,25,0.85)", backdropFilter:"blur(20px)", borderTop:"1px solid rgba(255,255,255,0.05)", padding:"12px 0", zIndex:999 }}>
         <div style={{ maxWidth:480, margin:"0 auto", display:"flex", justifyContent:"space-around" }}>
           <button onClick={() => setTab("scan")} style={{ background:"none", border:"none", color: tab === "scan" ? "#4ade80" : "#86efac44", fontSize:12, fontWeight:"bold", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
@@ -559,7 +723,10 @@ export default function EcoQuest() {
             <span style={{ fontSize:20 }}>♻️</span>Reciclar
           </button>
           <button onClick={() => setTab("achievements")} style={{ background:"none", border:"none", color: tab === "achievements" ? "#4ade80" : "#86efac44", fontSize:12, fontWeight:"bold", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
-            <span style={{ fontSize:20 }}>🏅</span>Logros
+            <span style={{ fontSize:20 }}>🏅</span>Premios
+          </button>
+          <button onClick={() => setTab("leagues")} style={{ background:"none", border:"none", color: tab === "leagues" ? "#4ade80" : "#86efac44", fontSize:12, fontWeight:"bold", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
+            <span style={{ fontSize:20 }}>🛡️</span>Ligas
           </button>
         </div>
       </div>
